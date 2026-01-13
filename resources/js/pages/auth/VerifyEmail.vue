@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -46,4 +46,4 @@ defineProps<{
             </TextLink>
         </Form>
     </AuthLayout>
-</template>
+</template> -->

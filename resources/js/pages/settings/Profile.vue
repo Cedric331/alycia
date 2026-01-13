@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
@@ -127,4 +127,4 @@ const user = page.props.auth.user;
             <DeleteUser />
         </SettingsLayout>
     </AppLayout>
-</template>
+</template> -->
