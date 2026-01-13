@@ -36,7 +36,7 @@ const props = defineProps<{
     posts: Post[];
 }>();
 
-const activeTab = ref<'all' | 'photo' | 'video'>('all');
+const activeTab = ref<'all' | 'photo' | 'video' | 'live'>('all');
 const displayMode = ref<'list' | 'grid'>('list');
 const showStickyBar = ref(false);
 const actionBarRef = ref<HTMLElement | null>(null);
@@ -107,13 +107,17 @@ onUnmounted(() => {
             >
                 <!-- Overlay gradient -->
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/60"></div>
-                
+
                 <!-- Stats en haut à gauche -->
                 <div class="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
                     <div class="flex items-center gap-2 mb-1 sm:mb-2">
                         <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white">{{ profile.name }}</h2>
-                        <span class="text-[#8B0000] text-lg sm:text-xl">✓</span>
                     </div>
+                </div>
+                
+                <!-- Stats en haut à gauche -->
+                <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+
                     <div class="flex items-center gap-3 sm:gap-4 text-white text-xs sm:text-sm md:text-base">
                         <div class="flex items-center gap-1">
                             <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -171,8 +175,6 @@ onUnmounted(() => {
                         <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
                             {{ profile.name }}
                         </h1>
-                        <span class="text-xl sm:text-2xl">🌶️</span>
-                        <span v-if="profile.is_online" class="text-red-600 text-xl sm:text-2xl">✓</span>
                     </div>
                     
                     <div v-if="profile.is_online" class="text-sm text-white mb-3 flex items-center gap-2">
@@ -183,10 +185,6 @@ onUnmounted(() => {
                     <p v-if="profile.biography" class="text-white mb-2 text-sm sm:text-base">
                         {{ profile.biography }}
                     </p>
-                    
-                    <button class="text-sm text-purple-400 hover:text-purple-300 hover:underline">
-                        Voir plus
-                    </button>
                 </div>
 
                 <!-- Action Bar (original position) -->
@@ -252,6 +250,17 @@ onUnmounted(() => {
                         >
                             Vidéo
                         </button>
+                        <button
+                            @click="activeTab = 'live'"
+                            :class="[
+                                'pb-2 px-1 font-medium transition-colors text-sm sm:text-base',
+                                activeTab === 'live' 
+                                    ? 'text-[#8B0000] border-b-2 border-[#8B0000]' 
+                                    : 'text-gray-400 hover:text-white'
+                            ]"
+                        >
+                            Live
+                        </button>
                     </div>
                     <!-- Display Mode Toggle -->
                     <div class="flex gap-1 bg-gray-900 rounded-lg p-1">
@@ -311,8 +320,6 @@ onUnmounted(() => {
                                         <span class="font-semibold text-white text-sm sm:text-base">
                                             {{ profile.name }}
                                         </span>
-                                        <span class="text-lg sm:text-xl">🌶️</span>
-                                        <span v-if="profile.is_online" class="text-red-600 text-xs sm:text-sm">✓</span>
                                         <span v-if="profile.is_online" class="text-sm text-white flex items-center gap-1">
                                             <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                             En ligne
@@ -369,7 +376,7 @@ onUnmounted(() => {
                                     @dragstart.prevent
                                 ></div>
                                 
-                                <!-- Lock Overlay avec cadenas (uniquement si flouté) -->
+                                <!-- Lock Overlay avec photo de profil (uniquement si flouté) -->
                                 <div 
                                     v-if="post.is_blurred"
                                     class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center"
@@ -381,7 +388,7 @@ onUnmounted(() => {
                                             </svg>
                                         </div>
                                         <button class="bg-[#8B0000] hover:bg-[#A00000] text-white px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition-colors shadow-lg">
-                                            Débloquer
+                                            {{ post.is_live && (post.type === 'video' || post.type === 'live') ? 'Accéder au live' : 'Débloquer' }}
                                         </button>
                                     </div>
                                 </div>
