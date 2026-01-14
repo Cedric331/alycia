@@ -28,6 +28,11 @@ class PostForm
                             ])
                             ->required()
                             ->default('photo'),
+                        Forms\Components\TextInput::make('duration')
+                            ->label('Durée (vidéo / live)')
+                            ->helperText('Exemple : 12:34')
+                            ->maxLength(20)
+                            ->visible(fn (callable $get) => in_array($get('type'), ['video', 'live'])),
                         Forms\Components\TextInput::make('order')
                             ->label('Ordre d\'affichage')
                             ->numeric()

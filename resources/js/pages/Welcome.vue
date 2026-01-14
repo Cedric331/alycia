@@ -19,6 +19,7 @@ interface Post {
     id: number;
     content: string | null;
     type: 'photo' | 'video' | 'live';
+    duration?: string | null;
     likes_count: number;
     is_visible: boolean;
     is_blurred: boolean;
@@ -36,18 +37,17 @@ const props = defineProps<{
     posts: Post[];
 }>();
 
-const activeTab = ref<'all' | 'photo' | 'video' | 'live'>('all');
+const activeTab = ref<'photo' | 'video' | 'live'>('photo');
 const displayMode = ref<'list' | 'grid'>('list');
 const showStickyBar = ref(false);
 const actionBarRef = ref<HTMLElement | null>(null);
 const actionBarTop = ref(0);
 
 const filteredPosts = computed(() => {
-    if (activeTab.value === 'all') {
-        return props.posts;
-    }
     return props.posts.filter(post => post.type === activeTab.value);
 });
+
+const hasLivePost = computed(() => props.posts.some(post => post.is_live));
 
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -68,6 +68,10 @@ const formatDate = (dateString: string) => {
             year: 'numeric'
         });
     }
+};
+
+const isLive = () => {
+    return props.posts.some(post => post.is_live);
 };
 
 // Gestion du scroll pour la sticky bar
@@ -143,9 +147,10 @@ onUnmounted(() => {
 
             <!-- Profile Content -->
             <div class="bg-black border-x border-b border-gray-800 rounded-b-lg p-4 sm:p-6 lg:p-8 pb-24 sm:pb-28">
-                <!-- Profile Picture Overlay - Positionné au-dessus du contenu -->
-                <div class="relative -mt-12 sm:-mt-16 md:-mt-20 mb-4 sm:mb-6">
-                    <div class="relative inline-block">
+                <!-- Profile Header + Biography with avatar inside the card -->
+                <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:p-6">
+                    <!-- Avatar in absolute position inside the bio card -->
+                    <div class="absolute -top-10 sm:-top-12 left-4 sm:left-5">
                         <div 
                             class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full border-4 border-black bg-gray-800 overflow-hidden"
                         >
@@ -155,6 +160,27 @@ onUnmounted(() => {
                                 :alt="profile.name"
                                 class="w-full h-full object-cover"
                             />
+                            <!-- live ring -->
+                            <span
+                            v-if="isLive()"
+                            class="absolute inset-0 rounded-full ring-2 ring-red-600 animate-pulse"
+                        />
+                            <!-- add tag live if is live -->
+                            <span
+    v-if="isLive()"
+    class="absolute bottom-[-15px] left-1/2 -translate-x-1/2
+           bg-red-400 text-white
+           px-2 py-0.5
+           rounded-full
+           text-xs sm:text-sm font-bold
+           border border-red-300/60
+           shadow-sm
+           animate-soft-blink"
+>
+    LIVE
+</span>
+
+
                             <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
                                 <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
@@ -167,24 +193,27 @@ onUnmounted(() => {
                             class="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-500 border-4 border-black rounded-full"
                         ></div>
                     </div>
-                </div>
 
-                <!-- Profile Header -->
-                <div class="mb-6">
-                    <div class="flex items-center gap-2 mb-2">
-                        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
-                            {{ profile.name }}
-                        </h1>
-                    </div>
+                    <div class="pl-24 sm:pl-28 md:pl-32 pt-4 sm:pt-5">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
+                                {{ profile.name }}
+                            </h1>
+                        </div>
+
+                        <p class="text-xs sm:text-sm text-gray-300 mb-2">
+                            à proximité 12km
+                        </p>
                     
-                    <div v-if="profile.is_online" class="text-sm text-white mb-3 flex items-center gap-2">
-                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                        En ligne
+                        <div v-if="profile.is_online" class="text-sm text-white mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            En ligne
+                        </div>
+                        
+                        <p v-if="profile.biography" class="text-white font-bold mb-2 text-sm sm:text-base">
+                            {{ profile.biography }}
+                        </p>
                     </div>
-                    
-                    <p v-if="profile.biography" class="text-white mb-2 text-sm sm:text-base">
-                        {{ profile.biography }}
-                    </p>
                 </div>
 
                 <!-- Action Bar (original position) -->
@@ -218,17 +247,6 @@ onUnmounted(() => {
                 <div class="flex items-center justify-between mb-6 border-b border-gray-800 pb-2">
                     <div class="flex gap-3 sm:gap-4">
                         <button
-                            @click="activeTab = 'all'"
-                            :class="[
-                                'pb-2 px-1 font-medium transition-colors text-sm sm:text-base',
-                                activeTab === 'all' 
-                                    ? 'text-[#8B0000] border-b-2 border-[#8B0000]' 
-                                    : 'text-gray-400 hover:text-white'
-                            ]"
-                        >
-                            Tous
-                        </button>
-                        <button
                             @click="activeTab = 'photo'"
                             :class="[
                                 'pb-2 px-1 font-medium transition-colors text-sm sm:text-base',
@@ -252,15 +270,26 @@ onUnmounted(() => {
                         </button>
                         <button
                             @click="activeTab = 'live'"
-                            :class="[
-                                'pb-2 px-1 font-medium transition-colors text-sm sm:text-base',
-                                activeTab === 'live' 
-                                    ? 'text-[#8B0000] border-b-2 border-[#8B0000]' 
-                                    : 'text-gray-400 hover:text-white'
-                            ]"
+                            class="relative px-3 pb-2 text-sm sm:text-base font-medium transition-colors"
+                            :class="activeTab === 'live'
+                                ? 'text-red-700'
+                                : 'text-gray-400 hover:text-white'"
                         >
                             Live
+
+                            <!-- underline -->
+                            <span
+                                v-if="activeTab === 'live'"
+                                class="absolute left-0 right-0 -bottom-px h-0.5 bg-red-700 rounded-full"
+                            />
+
+                            <!-- live dot -->
+                            <span
+                                v-if="hasLivePost"
+                                class="absolute -top-0 -right-0 h-2 w-2 rounded-full bg-red-600 animate-pulse"
+                            />
                         </button>
+
                     </div>
                     <!-- Display Mode Toggle -->
                     <div class="flex gap-1 bg-gray-900 rounded-lg p-1">
@@ -305,20 +334,36 @@ onUnmounted(() => {
                         <!-- Post Header -->
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center gap-2 sm:gap-3">
-                                <div 
-                                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-800 overflow-hidden flex-shrink-0"
+                                <div class="relative flex-shrink-0">
+                                <!-- avatar -->
+                                <div
+                                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-800"
                                 >
-                                    <img 
+                                    <img
                                         v-if="profile.avatar_url"
                                         :src="profile.avatar_url"
                                         :alt="profile.name"
                                         class="w-full h-full object-cover"
                                     />
                                 </div>
+
+                                <!-- live ring -->
+                                <span
+                                    v-if="post.is_live"
+                                    class="absolute inset-0 rounded-full ring-2 ring-red-600 animate-pulse"
+                                />
+                            </div>
+
                                 <div>
                                     <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
                                         <span class="font-semibold text-white text-sm sm:text-base">
                                             {{ profile.name }}
+                                        </span>
+                                        <span
+                                            v-if="post.is_live && (post.type === 'video' || post.type === 'live')"
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-red-600 text-white ml-1 sm:ml-2 animate-soft-pulse-red"
+                                        >
+                                            LIVE
                                         </span>
                                         <span v-if="profile.is_online" class="text-sm text-white flex items-center gap-1">
                                             <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
@@ -367,6 +412,14 @@ onUnmounted(() => {
                                 >
                                     <span class="w-2 h-2 bg-white rounded-full"></span>
                                     LIVE
+                                </div>
+
+                                <!-- Video duration (top-right) -->
+                                <div 
+                                    v-if="post.duration && (post.type === 'video' || post.type === 'live')"
+                                    class="absolute top-3 right-3 z-30 bg-black/70 text-white px-2 py-0.5 rounded text-xs sm:text-sm font-semibold"
+                                >
+                                    {{ post.duration }}
                                 </div>
                                 
                                 <!-- Overlay de protection (empêche le drag) -->
@@ -439,6 +492,14 @@ onUnmounted(() => {
                         >
                             <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
                             LIVE
+                        </div>
+
+                        <!-- Video duration (top-right) -->
+                        <div 
+                            v-if="post.duration && (post.type === 'video' || post.type === 'live')"
+                            class="absolute top-2 right-2 z-30 bg-black/70 text-white px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-semibold"
+                        >
+                            {{ post.duration }}
                         </div>
                         
                         <!-- Multiple media indicator -->

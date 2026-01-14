@@ -39,6 +39,9 @@ class PostsTable
                         'live' => 'Live',
                         default => $state,
                     }),
+                Tables\Columns\TextColumn::make('duration')
+                    ->label('Durée')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('likes_count')
                     ->label('Likes')
                     ->sortable(),

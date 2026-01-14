@@ -34,6 +34,7 @@ Route::get('/', function () {
                 'id' => $post->id,
                 'content' => $post->content,
                 'type' => $post->type,
+                'duration' => $post->duration,
                 'likes_count' => $post->likes_count,
                 'is_visible' => $post->is_visible,
                 'is_blurred' => $post->is_blurred,

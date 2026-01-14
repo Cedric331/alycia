@@ -20,6 +20,7 @@ class Post extends Model implements HasMedia
         'is_visible',
         'is_blurred',
         'is_live',
+        'duration',
         'order',
     ];
 
