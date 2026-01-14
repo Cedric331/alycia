@@ -225,6 +225,27 @@ onUnmounted(() => {
                             {{ profile.name }}
                         </h1>
 
+   
+                                    <!-- badge vérifié -->
+                                    <span
+                                        class="inline-flex items-center justify-center
+                                            w-6 h-6 rounded-full
+                                            bg-[#2765F5]
+                                            shadow-md"
+                                        title="Profil vérifié"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-white"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                    </span>
                         <div v-if="profile.is_online" class="text-sm text-white flex items-center gap-2">
                             <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                             En ligne
@@ -513,7 +534,7 @@ onUnmounted(() => {
                                         {{ profile.name }}
                                     </p>
 
-                                    <!-- badge vérifié (style proche) -->
+                                    <!-- badge vérifié -->
                                     <span
                                         class="inline-flex items-center justify-center
                                             w-6 h-6 rounded-full
