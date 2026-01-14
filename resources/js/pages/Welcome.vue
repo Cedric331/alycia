@@ -54,21 +54,27 @@ const formatDate = (dateString: string) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
+    const time = date.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+
     if (days === 0) {
-        return "Aujourd'hui";
+        return `Aujourd’hui à ${time}`;
     } else if (days === 1) {
-        return "Hier";
+        return `Hier à ${time}`;
     } else if (days < 7) {
-        return `Il y a ${days} jours`;
+        return `Il y a ${days} jours à ${time}`;
     } else {
         return date.toLocaleDateString('fr-FR', {
             day: 'numeric',
             month: 'long',
-            year: 'numeric'
-        });
+            year: 'numeric',
+        }) + ` à ${time}`;
     }
 };
+
 
 const isLive = () => {
     return props.posts.some(post => post.is_live);
@@ -118,10 +124,78 @@ onUnmounted(() => {
                         <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white">{{ profile.name }}</h2>
                     </div>
                 </div>
-                
-                <!-- Stats en haut à gauche -->
-                <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+            </div>
 
+            <!-- Profile Content -->
+            <div class="bg-black border-x border-b border-gray-800 rounded-b-lg p-4 sm:p-6 lg:p-8 pb-24 sm:pb-28">
+                <!-- Profile Header + Biography with avatar inside the card -->
+                <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:p-6">
+                    <!-- Avatar -->
+                    <div class="absolute -top-10 sm:-top-12 left-0 sm:left-0">
+                    <!-- Avatar circle: clip uniquement l'image -->
+                    <div
+                        class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
+                            rounded-full border-4 border-black bg-gray-800 overflow-hidden"
+                    >
+                        <!-- Avatar image -->
+                        <img
+                            v-if="profile.avatar_url"
+                            :src="profile.avatar_url"
+                            :alt="profile.name"
+                            class="w-full h-full object-cover"
+                        />
+
+                        <!-- Fallback icon -->
+                        <div
+                            v-else
+                            class="w-full h-full flex items-center justify-center text-gray-400"
+                        >
+                            <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- ✅ Online dot -->
+                    <span
+                        v-if="profile.is_online"
+                        class="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5
+                            w-3 h-3 sm:w-4 sm:h-4
+                            rounded-full bg-green-500
+                            ring-4 ring-black z-30"
+                        title="En ligne"
+                    />
+
+                    <!-- Live ring: sur le wrapper (pas clipé) -->
+                    <span
+                        v-if="isLive()"
+                        class="absolute inset-0 rounded-full ring-4 ring-red-600 live-pulse pointer-events-none z-10"
+                    />
+
+                    <!-- Live badge: sur le wrapper (donc visible) -->
+                    <span
+                        v-if="isLive()"
+                        class="absolute -bottom-4 left-1/2 -translate-x-1/2
+                            bg-red-500 text-white
+                            px-2 py-0.5
+                            rounded-full
+                            text-xs sm:text-sm font-bold
+                            border border-red-300/60
+                            shadow-sm
+                            live-pulse z-20"
+                    >
+                        LIVE
+                    </span>
+                </div>
+
+
+
+                                 <!-- Stats en haut à droite -->
+                <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
                     <div class="flex items-center gap-3 sm:gap-4 text-white text-xs sm:text-sm md:text-base">
                         <div class="flex items-center gap-1">
                             <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -142,99 +216,61 @@ onUnmounted(() => {
                             <span>{{ profile.likes_count }}</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Profile Content -->
-            <div class="bg-black border-x border-b border-gray-800 rounded-b-lg p-4 sm:p-6 lg:p-8 pb-24 sm:pb-28">
-                <!-- Profile Header + Biography with avatar inside the card -->
-                <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:p-6">
-                    <!-- Avatar in absolute position inside the bio card -->
-                    <div class="absolute -top-10 sm:-top-12 left-4 sm:left-5">
-                        <div 
-                            class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full border-4 border-black bg-gray-800 overflow-hidden"
-                        >
-                            <img 
-                                v-if="profile.avatar_url"
-                                :src="profile.avatar_url"
-                                :alt="profile.name"
-                                class="w-full h-full object-cover"
-                            />
-                            <!-- live ring -->
-                            <span
-                            v-if="isLive()"
-                            class="absolute inset-0 rounded-full ring-2 ring-red-600 animate-pulse"
-                        />
-                            <!-- add tag live if is live -->
-                            <span
-    v-if="isLive()"
-    class="absolute bottom-[-15px] left-1/2 -translate-x-1/2
-           bg-red-400 text-white
-           px-2 py-0.5
-           rounded-full
-           text-xs sm:text-sm font-bold
-           border border-red-300/60
-           shadow-sm
-           animate-soft-blink"
->
-    LIVE
-</span>
-
-
-                            <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                                <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </div>
-                        <!-- Online Status Indicator -->
-                        <div 
-                            v-if="profile.is_online"
-                            class="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-green-500 border-4 border-black rounded-full"
-                        ></div>
                     </div>
 
-                    <div class="pl-24 sm:pl-28 md:pl-32 pt-4 sm:pt-5">
+                    <!-- ✅ Contenu en dessous de l’avatar -->
+                    <div class="pt-14 sm:pt-16 md:pt-20">
                         <div class="flex items-center gap-2 mb-1">
-                            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
-                                {{ profile.name }}
-                            </h1>
-                        </div>
+                        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
+                            {{ profile.name }}
+                        </h1>
 
-                        <p class="text-xs sm:text-sm text-gray-300 mb-2">
-                            à proximité 12km
-                        </p>
-                    
-                        <div v-if="profile.is_online" class="text-sm text-white mb-3 flex items-center gap-2">
+                        <div v-if="profile.is_online" class="text-sm text-white flex items-center gap-2">
                             <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                             En ligne
                         </div>
-                        
+                        </div>
+
+                        <p class="text-xs sm:text-sm text-gray-300 mb-2 flex items-center gap-1">
+                        <!-- icon -->
+                         <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        </svg>
+                        à proximité 12,4km
+                        </p>
+
                         <p v-if="profile.biography" class="text-white font-bold mb-2 text-sm sm:text-base">
-                            {{ profile.biography }}
+                        {{ profile.biography }}
                         </p>
                     </div>
                 </div>
 
                 <!-- Action Bar (original position) -->
-                <div 
+                <div
                     ref="actionBarRef"
-                    class="bg-gray-900 border border-gray-800 rounded-lg p-3 sm:p-4 mb-6 flex items-center gap-3"
-                >
-                    <div 
-                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-800 overflow-hidden flex-shrink-0"
+                    class="relative bg-gray-900 border border-gray-800 rounded-lg mb-6
+                            flex items-start"
                     >
-                        <img 
-                            v-if="profile.avatar_url"
-                            :src="profile.avatar_url"
-                            :alt="profile.name"
-                            class="w-full h-full object-cover"
+                    <!-- Avatar: top-left corner -->
+                    <div
+                    class="absolute -top-3 -left-2
+                        w-8 h-8 sm:w-10 sm:h-10
+                        rounded-full bg-gray-800 overflow-hidden"
+                    >
+                        <img
+                        v-if="profile.avatar_url"
+                        :src="profile.avatar_url"
+                        :alt="profile.name"
+                        class="w-full h-full object-cover"
                         />
                     </div>
-                    <p class="text-white flex-1 text-sm sm:text-base">
+
+                    <!-- Content (space reserved for avatar) -->
+                    <p class="text-white font-bold flex-1 text-sm sm:text-base pl-10 sm:pl-10 p-3 sm:p-4">
                         J'aime ceux qui osent. 💋
                     </p>
                 </div>
+
 
                 <!-- Subscribe Button -->
                 <button 
@@ -271,7 +307,7 @@ onUnmounted(() => {
                         <button
                             @click="activeTab = 'live'"
                             class="relative px-3 pb-2 text-sm sm:text-base font-medium transition-colors"
-                            :class="activeTab === 'live'
+                            :class="activeTab === 'live' || hasLivePost
                                 ? 'text-red-700'
                                 : 'text-gray-400 hover:text-white'"
                         >
@@ -559,10 +595,18 @@ onUnmounted(() => {
             leave-from-class="translate-y-0"
             leave-to-class="translate-y-full"
         >
-            <div 
-                v-if="showStickyBar"
-                class="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800 p-3 sm:p-4"
-            >
+                <div 
+                    v-if="showStickyBar"
+                    class="fixed bottom-4 left-1/2 -translate-x-1/2
+                        w-[calc(100%-2rem)] md:w-6/12
+                        z-50
+                        bg-gray-900/95 backdrop-blur-sm
+                        border border-gray-800
+                        rounded-xl
+                        p-3 sm:p-4
+                        shadow-lg"
+                >
+
                 <div class="max-w-6xl mx-auto flex items-center gap-3">
                     <div 
                         class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 border-2 border-[#8B0000]"
@@ -592,3 +636,25 @@ onUnmounted(() => {
         </Transition>
     </div>
 </template>
+
+<style scoped>
+@keyframes softBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.live-pulse {
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+</style>
+
+    
