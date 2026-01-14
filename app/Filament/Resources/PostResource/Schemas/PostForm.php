@@ -37,10 +37,7 @@ class PostForm
                     Forms\Components\TextInput::make('duration')
                         ->label('Durée')
                         ->helperText('Format conseillé : mm:ss')
-                        ->maxLength(20)
-                        ->visible(fn (callable $get) =>
-                            in_array($get('type'), ['video', 'live'])
-                        ),
+                        ->maxLength(20),
                 ])
                 ->columns(2),
 
@@ -77,10 +74,7 @@ class PostForm
                     Forms\Components\Toggle::make('is_live')
                         ->label('En direct')
                         ->helperText('Affiche le badge LIVE')
-                        ->default(false)
-                        ->visible(fn (callable $get) =>
-                            in_array($get('type'), ['video', 'live'])
-                        ),
+                        ->default(false),
                 ])
                 ->columns(3),
 

@@ -460,21 +460,20 @@ onUnmounted(() => {
                                 </div>
                                 
                                 <!-- LIVE Badge -->
-    <!-- ✅ LIVE Badge (au-dessus de la vitre) -->
-    <div
-    v-if="post.is_live && (post.type === 'video' || post.type === 'live')"
-    class="absolute top-3 left-3 z-40
-           bg-red-600 text-white px-3 py-1 rounded-full
-           text-xs sm:text-sm font-bold flex items-center gap-1.5 animate-pulse"
-  >
-    <span class="w-2 h-2 bg-white rounded-full"></span>
-    LIVE
-  </div>
+                                <div
+                                v-if="post.is_live && (post.type === 'video' || post.type === 'live')"
+                                class="absolute top-3 left-3 z-40
+                                    bg-red-600 text-white px-3 py-1 rounded-full
+                                    text-xs sm:text-sm font-bold flex items-center gap-1.5 animate-pulse"
+                            >
+                                <span class="w-2 h-2 bg-white rounded-full"></span>
+                                LIVE
+                            </div>
 
                                 <!-- Video duration (top-right) -->
                                 <div 
                                     v-if="post.duration && (post.type === 'video' || post.type === 'live')"
-                                    class="absolute top-3 right-3 z-30 bg-black/70 text-white px-2 py-0.5 rounded text-xs sm:text-sm font-semibold"
+                                    class="absolute z-40 top-3 right-3 z-30 bg-black/70 text-white px-2 py-0.5 rounded text-xs sm:text-sm font-semibold"
                                 >
                                     {{ post.duration }}
                                 </div>
@@ -632,7 +631,7 @@ onUnmounted(() => {
                         <!-- Video duration (top-right) -->
                         <div 
                             v-if="post.duration && (post.type === 'video' || post.type === 'live')"
-                            class="absolute top-2 right-2 z-30 bg-black/70 text-white px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-semibold"
+                            class="absolute top-2 right-2 z-30 bg-black/70 text-white px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-semibold flex items-center gap-1"
                         >
                             {{ post.duration }}
                         </div>
