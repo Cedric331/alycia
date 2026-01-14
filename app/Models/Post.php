@@ -22,6 +22,7 @@ class Post extends Model implements HasMedia
         'is_live',
         'duration',
         'order',
+        'created_at'
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class Post extends Model implements HasMedia
         'is_live' => 'boolean',
         'likes_count' => 'integer',
         'order' => 'integer',
+        'created_at' => 'datetime',
     ];
 
     public function registerMediaCollections(): void
@@ -46,7 +48,9 @@ class Post extends Model implements HasMedia
     {
         $this->addMediaConversion('blurred')
             ->fit(Fit::Contain, 800, 800)
+            ->pixelate(50)
             ->blur(100)
+            ->fit(Fit::Contain, 800, 800)
             ->nonQueued()
             ->performOnCollections('media');
     

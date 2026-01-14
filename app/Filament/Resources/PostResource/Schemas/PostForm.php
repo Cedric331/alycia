@@ -4,76 +4,122 @@ namespace App\Filament\Resources\PostResource\Schemas;
 
 use Filament\Forms;
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class PostForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
+        return $schema->schema([
+
+            /**
+             * CONTENU PRINCIPAL
+             */
+            Section::make('Contenu')
+                ->description('Texte et type de publication')
+                ->schema([
+                    Forms\Components\Textarea::make('content')
+                        ->label('Contenu')
+                        ->rows(4)
+                        ->columnSpanFull(),
+
+                    Forms\Components\Select::make('type')
+                        ->label('Type de publication')
+                        ->options([
+                            'photo' => 'Photo',
+                            'video' => 'Vidéo',
+                            'live'  => 'Live',
+                        ])
+                        ->required()
+                        ->default('photo'),
+
+                    Forms\Components\TextInput::make('duration')
+                        ->label('Durée')
+                        ->helperText('Format conseillé : mm:ss')
+                        ->maxLength(20)
+                        ->visible(fn (callable $get) =>
+                            in_array($get('type'), ['video', 'live'])
+                        ),
+                ])
+                ->columns(2),
+
+            /**
+             * MÉDIAS
+             */
+            Section::make('Médias')
+                ->description('Images ou vidéos associées au post')
+                ->schema([
+                    SpatieMediaLibraryFileUpload::make('media')
+                        ->label('Médias')
+                        ->collection('media')
+                        ->multiple()
+                        ->image()
+                        ->imageEditor()
+                        ->columnSpanFull(),
+                ]),
+
+            /**
+             * VISIBILITÉ & COMPORTEMENT
+             */
+            Section::make('Visibilité')
+                ->description('Contrôle de l’affichage côté public')
+                ->schema([
+                    Forms\Components\Toggle::make('is_visible')
+                        ->label('Visible')
+                        ->default(true),
+
+                    Forms\Components\Toggle::make('is_blurred')
+                        ->label('Image floutée')
+                        ->helperText('Affiche une version floutée avec cadenas en front')
+                        ->default(true),
+
+                    Forms\Components\Toggle::make('is_live')
+                        ->label('En direct')
+                        ->helperText('Affiche le badge LIVE')
+                        ->default(false)
+                        ->visible(fn (callable $get) =>
+                            in_array($get('type'), ['video', 'live'])
+                        ),
+                ])
+                ->columns(3),
+
+            /**
+             * STATISTIQUES & ORDRE
+             */
+            Section::make('Organisation & statistiques')
+                ->description('Données internes')
+                ->schema([
+                    Forms\Components\TextInput::make('likes_count')
+                        ->label('Nombre de likes')
+                        ->numeric()
+                        ->default(0),
+
+                    Forms\Components\TextInput::make('order')
+                        ->label('Ordre d’affichage')
+                        ->numeric()
+                        ->default(0)
+                        ->required(),
+                ])
+                ->columns(2),
+
+            /**
+             * MÉTADONNÉES
+             */
+            Section::make('Métadonnées')
             ->schema([
-                Section::make('Contenu')
-                    ->schema([
-                        Forms\Components\Textarea::make('content')
-                            ->label('Contenu')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        Forms\Components\Select::make('type')
-                            ->label('Type')
-                            ->options([
-                                'photo' => 'Photo',
-                                'video' => 'Vidéo',
-                                'live' => 'Live',
-                            ])
-                            ->required()
-                            ->default('photo'),
-                        Forms\Components\TextInput::make('duration')
-                            ->label('Durée (vidéo / live)')
-                            ->helperText('Exemple : 12:34')
-                            ->maxLength(20)
-                            ->visible(fn (callable $get) => in_array($get('type'), ['video', 'live'])),
-                        Forms\Components\TextInput::make('order')
-                            ->label('Ordre d\'affichage')
-                            ->numeric()
-                            ->default(0)
-                            ->required(),
-                    ])
-                    ->columns(2),
+                Forms\Components\DateTimePicker::make('created_at')
+                    ->label('Date')
+                    ->seconds(false)
+                    // Si création : maintenant. Si édition : la valeur du modèle est déjà là.
+                    ->default(fn ($record) => $record?->created_at ?? now())
+                    // On veut que ce soit sauvegardé
+                    ->dehydrated(true)
+                    ->required(),
+            ])
+            ->collapsed(),
+        
 
-                Section::make('Médias')
-                    ->schema([
-                        SpatieMediaLibraryFileUpload::make('media')
-                            ->label('Média')
-                            ->collection('media')
-                            ->multiple()
-                            ->image()
-                            ->imageEditor()
-                            ->columnSpanFull(),
-                    ]),
-
-                Section::make('Statistiques et visibilité')
-                    ->schema([
-                        Forms\Components\TextInput::make('likes_count')
-                            ->label('Nombre de likes')
-                            ->numeric()
-                            ->default(0)
-                            ->required(),
-                        Forms\Components\Toggle::make('is_visible')
-                            ->label('Visible')
-                            ->default(true),
-                        Forms\Components\Toggle::make('is_blurred')
-                            ->label('Flouter l\'image')
-                            ->helperText('Si activé, l\'image sera floutée avec un cadenas en front')
-                            ->default(true),
-                        Forms\Components\Toggle::make('is_live')
-                            ->label('En Live')
-                            ->helperText('Affiche un badge "LIVE" sur les vidéos')
-                            ->default(false)
-                            ->visible(fn (callable $get) => in_array($get('type'), ['video', 'live'])),
-                    ])
-                    ->columns(2),
-            ]);
+        ]);
     }
 }
-

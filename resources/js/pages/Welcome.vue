@@ -281,52 +281,49 @@ onUnmounted(() => {
 
                 <!-- Tabs -->
                 <div class="flex items-center justify-between mb-6 border-b border-gray-800 pb-2">
-                    <div class="flex gap-3 sm:gap-4">
+                    <!-- Tabs (style pill comme Display Mode Toggle) -->
+                    <div class="flex gap-1 bg-gray-900 rounded-lg p-1">
                         <button
                             @click="activeTab = 'photo'"
                             :class="[
-                                'pb-2 px-1 font-medium transition-colors text-sm sm:text-base',
-                                activeTab === 'photo' 
-                                    ? 'text-[#8B0000] border-b-2 border-[#8B0000]' 
+                                'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
+                                activeTab === 'photo'
+                                    ? 'bg-[#8B0000] text-white'
                                     : 'text-gray-400 hover:text-white'
                             ]"
                         >
                             Photo
                         </button>
+
                         <button
                             @click="activeTab = 'video'"
                             :class="[
-                                'pb-2 px-1 font-medium transition-colors text-sm sm:text-base',
-                                activeTab === 'video' 
-                                    ? 'text-[#8B0000] border-b-2 border-[#8B0000]' 
+                                'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
+                                activeTab === 'video'
+                                    ? 'bg-[#8B0000] text-white'
                                     : 'text-gray-400 hover:text-white'
                             ]"
                         >
                             Vidéo
                         </button>
+
                         <button
                             @click="activeTab = 'live'"
-                            class="relative px-3 pb-2 text-sm sm:text-base font-medium transition-colors"
-                            :class="activeTab === 'live' || hasLivePost
-                                ? 'text-red-700'
-                                : 'text-gray-400 hover:text-white'"
+                            class="relative px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base"
+                            :class="activeTab === 'live'
+                                ? 'bg-[#8B0000] text-white'
+                                : hasLivePost ? 'text-red-600' : 'text-gray-400 hover:text-white'"
                         >
                             Live
 
-                            <!-- underline -->
+                            <!-- live dot (si live existe) -->
                             <span
-                                v-if="activeTab === 'live'"
-                                class="absolute left-0 right-0 -bottom-px h-0.5 bg-red-700 rounded-full"
-                            />
-
-                            <!-- live dot -->
-                            <span
-                                v-if="hasLivePost"
-                                class="absolute -top-0 -right-0 h-2 w-2 rounded-full bg-red-600 animate-pulse"
+                                v-if="hasLivePost && activeTab !== 'live'"
+                                class="absolute top-1 right-0 h-2 w-2 rounded-full bg-red-600 animate-pulse"
                             />
                         </button>
-
                     </div>
+
                     <!-- Display Mode Toggle -->
                     <div class="flex gap-1 bg-gray-900 rounded-lg p-1">
                         <button 
@@ -442,13 +439,16 @@ onUnmounted(() => {
                                 </div>
                                 
                                 <!-- LIVE Badge -->
-                                <div 
-                                    v-if="post.is_live && (post.type === 'video' || post.type === 'live')"
-                                    class="absolute top-3 left-3 z-30 bg-red-600 text-white px-3 py-1 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 animate-pulse"
-                                >
-                                    <span class="w-2 h-2 bg-white rounded-full"></span>
-                                    LIVE
-                                </div>
+    <!-- ✅ LIVE Badge (au-dessus de la vitre) -->
+    <div
+    v-if="post.is_live && (post.type === 'video' || post.type === 'live')"
+    class="absolute top-3 left-3 z-40
+           bg-red-600 text-white px-3 py-1 rounded-full
+           text-xs sm:text-sm font-bold flex items-center gap-1.5 animate-pulse"
+  >
+    <span class="w-2 h-2 bg-white rounded-full"></span>
+    LIVE
+  </div>
 
                                 <!-- Video duration (top-right) -->
                                 <div 
@@ -466,21 +466,99 @@ onUnmounted(() => {
                                 ></div>
                                 
                                 <!-- Lock Overlay avec photo de profil (uniquement si flouté) -->
-                                <div 
-                                    v-if="post.is_blurred"
-                                    class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center"
+                                <div
+                                v-if="post.is_blurred"
+                                class="absolute inset-0 z-30
+                                        bg-black/35 backdrop-blur-md
+                                        flex items-center justify-center"
                                 >
-                                    <div class="text-center">
-                                        <div class="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full bg-black/60 flex items-center justify-center mx-auto mb-3 border border-white/20">
-                                            <svg class="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
+                                <div class="text-center px-6">
+                                    <!-- Avatar + ring + lock badge -->
+                                    <div class="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full">
+                                    <!-- ring rouge -->
+                                    <div class="absolute inset-0 rounded-full ring-4 ring-red-600"></div>
+
+                                    <!-- avatar -->
+                                    <div class="w-full h-full rounded-full overflow-hidden bg-gray-800">
+                                        <img
+                                        v-if="profile.avatar_url"
+                                        :src="profile.avatar_url"
+                                        :alt="profile.name"
+                                        class="w-full h-full object-cover"
+                                        />
+                                        <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
+                                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                        </svg>
                                         </div>
-                                        <button class="bg-[#8B0000] hover:bg-[#A00000] text-white px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition-colors shadow-lg">
-                                            {{ post.is_live && (post.type === 'video' || post.type === 'live') ? 'Accéder au live' : 'Débloquer' }}
-                                        </button>
                                     </div>
+
+                                    <!-- lock badge (en bas à droite) -->
+                                    <div
+                                        class="absolute -bottom-2 -right-2
+                                            w-10 h-10 rounded-full bg-black
+                                            flex items-center justify-center
+                                            ring-4 ring-black"
+                                    >
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                    </div>
+                                    </div>
+
+                                    <!-- Name + verified -->
+                                    <div class="mt-4 flex items-center justify-center gap-2">
+                                    <p class="text-white text-2xl sm:text-3xl font-extrabold tracking-tight">
+                                        {{ profile.name }}
+                                    </p>
+
+                                    <!-- badge vérifié (style proche) -->
+                                    <span
+                                        class="inline-flex items-center justify-center
+                                            w-6 h-6 rounded-full
+                                            bg-[#2765F5]
+                                            shadow-md"
+                                        title="Profil vérifié"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-white"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                    </span>
+
+                                    </div>
+
+                                    <!-- count line -->
+                                    <!-- <div class="mt-2 flex items-center justify-center gap-2 text-white/85 font-semibold">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4-4a3 3 0 014 0l4 4m-2-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="text-lg">
+                                        {{ post.media?.length ? `${post.media.length} photo${post.media.length > 1 ? 's' : ''}` : '1 photo' }}
+                                    </span>
+                                    </div> -->
+
+                                    <!-- CTA button (dégradé pill) -->
+                                    <button
+                                    class="mt-6 px-10 py-3 rounded-full text-white font-bold text-lg
+                                            shadow-lg transition
+                                            bg-gradient-to-r from-[#6f0000] to-[#b00000]
+                                            hover:from-[#7f0000] hover:to-[#c00000]"
+                                    >
+                                    {{ post.is_live && (post.type === 'video' || post.type === 'live') ? 'Accéder au live' : 'Débloquer' }}
+                                    </button>
                                 </div>
+                                </div>
+
                             </div>
                         </div>
 
