@@ -16,7 +16,12 @@ Route::get('/media/original/{mediaId}', [MediaController::class, 'showOriginal']
     ->where('mediaId', '[0-9]+');
 
 Route::get('/', function () {
-    $profile = Profile::getDefault();
+    $profile = Profile::first();
+
+    // Si le profil n'existe pas, rediriger vers 404
+    if (!$profile) {
+        return abort(404);
+    }
     
     // Charger les médias du profil (avatar et banner sont publics)
     $bannerMedia = $profile->getFirstMedia('banner');

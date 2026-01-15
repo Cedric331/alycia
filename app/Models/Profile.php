@@ -40,25 +40,6 @@ class Profile extends Model implements HasMedia
             ->singleFile();
     }
 
-    /**
-     * Get the default profile (singleton pattern)
-     */
-    public static function getDefault(): self
-    {
-        return static::firstOrCreate(
-            ['id' => 1],
-            [
-                'name' => 'Alycia',
-                'biography' => "C'est ici où je post le 🔞",
-                'is_online' => false,
-                'photos_count' => 0,
-                'videos_count' => 0,
-                'likes_count' => 0,
-                'action_label' => "S'abonner au VIP d'alycia",
-            ]
-        );
-    }
-
     public function isWithinOnlineHours(?Carbon $now = null, ?string $tz = null): bool
     {
         if (! $this->online_from || ! $this->online_to) {
