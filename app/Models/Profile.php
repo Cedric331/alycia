@@ -8,6 +8,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Carbon\Carbon;
+use Spatie\Image\Enums\Fit;
 
 class Profile extends Model implements HasMedia
 {
@@ -31,15 +32,17 @@ class Profile extends Model implements HasMedia
         'online_to' => 'string',
     ];
 
-    public function registerMediaCollections(): void
+    public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaCollection('banner')
-            ->useDisk('public')
-            ->singleFile();
+        $this->addMediaConversion('avatar_preview')
+            ->fit(Fit::Crop, 300, 300)
+            ->nonQueued()
+            ->performOnCollections('avatar');
     
-        $this->addMediaCollection('avatar')
-            ->useDisk('public')
-            ->singleFile();
+        $this->addMediaConversion('banner_preview')
+            ->fit(Fit::Crop, 1200, 450)
+            ->nonQueued()
+            ->performOnCollections('banner');
     }
     
 
