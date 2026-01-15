@@ -38,25 +38,17 @@ class ProfileForm
                 Section::make('Médias')
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('banner_media')
-                        ->label('Image bannière')
                         ->collection('banner')
                         ->conversion('banner_preview')
-                        ->disk('public')
-                        ->visibility('public')
                         ->image()
-                        ->imageEditor()
-                        ->columnSpanFull(),
+                        ->imageEditor(),
                     
                     SpatieMediaLibraryFileUpload::make('avatar_media')
-                        ->label('Photo de profil')
                         ->collection('avatar')
                         ->conversion('avatar_preview')
-                        ->disk('public')
-                        ->visibility('public')
                         ->image()
                         ->imageEditor()
-                        ->avatar()
-                        ->columnSpanFull(),
+                        ->avatar(),
                     ]),
 
                 Section::make('Indicateurs')
