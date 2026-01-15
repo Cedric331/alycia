@@ -34,11 +34,14 @@ class Profile extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('banner')
+            ->useDisk('public')
             ->singleFile();
-
+    
         $this->addMediaCollection('avatar')
+            ->useDisk('public')
             ->singleFile();
     }
+    
 
     public function isWithinOnlineHours(?Carbon $now = null, ?string $tz = null): bool
     {
