@@ -11,34 +11,29 @@ use Symfony\Component\HttpFoundation\Response;
 class MediaController extends Controller
 {
     /**
-     * Servir une image d'un post (floutée ou non selon le paramètre)
+     * Return image of a post (blurred or not depending on the parameter)
      */
     public function show(int $mediaId, bool $blurred = true): Response
     {
         $media = Media::findOrFail($mediaId);
         
-        // Vérifier que le média appartient à un Post
         if ($media->model_type !== Post::class) {
             abort(404);
         }
         
-        // Obtenir le chemin selon le mode
         if ($blurred) {
             $path = $media->getPath('blurred');
         } else {
-            // Pour les images non floutées, on sert l'original
             $path = $media->getPath();
         }
         
         if (!file_exists($path)) {
-            // Fallback sur l'original si la conversion n'existe pas
             $path = $media->getPath();
             if (!file_exists($path)) {
                 abort(404, 'Image not found');
             }
         }
         
-        // Headers anti-téléchargement
         return response()->file($path, [
             'Content-Type' => $media->mime_type,
             'Content-Disposition' => 'inline',
@@ -46,9 +41,9 @@ class MediaController extends Controller
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }
-    
+
     /**
-     * Servir une image floutée
+     * Return blurred image of a post
      */
     public function showBlurred(int $mediaId): Response
     {
@@ -56,7 +51,7 @@ class MediaController extends Controller
     }
     
     /**
-     * Servir une image non floutée (originale)
+     * Return original image of a post
      */
     public function showOriginal(int $mediaId): Response
     {
@@ -64,7 +59,7 @@ class MediaController extends Controller
     }
     
     /**
-     * Servir le thumbnail pour l'admin (via route protégée)
+     * Return thumbnail for admin (via protected route)
      */
     public function showThumb(int $mediaId): Response
     {

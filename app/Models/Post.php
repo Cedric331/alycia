@@ -34,6 +34,17 @@ class Post extends Model implements HasMedia
         'created_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (self $post) {
+            if (method_exists($post, 'isForceDeleting') && ! $post->isForceDeleting()) {
+                return;
+            }
+
+            $post->clearMediaCollection('media');
+        });
+    }
+
     public function registerMediaCollections(): void
     {
         // Les originaux sont stockés en privé (non accessibles publiquement)

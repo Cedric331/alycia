@@ -41,7 +41,6 @@ Route::get('/', function () {
                 'is_live' => $post->is_live,
                 'created_at' => $post->created_at,
                 'media' => $post->getMedia('media')->map(function ($media) use ($post) {
-                    // Utiliser la route appropriée selon si le post est flouté ou non
                     $routeName = $post->is_blurred ? 'media.blurred' : 'media.original';
                     return [
                         'id' => $media->id,
@@ -58,6 +57,7 @@ Route::get('/', function () {
             'name' => $profile->name,
             'biography' => $profile->biography,
             'is_online' => $profile->is_online,
+            'is_within_online_hours' => $profile->isWithinOnlineHours(now(), 'Europe/Paris'),
             'photos_count' => $profile->photos_count,
             'videos_count' => $profile->videos_count,
             'likes_count' => $profile->likes_count,

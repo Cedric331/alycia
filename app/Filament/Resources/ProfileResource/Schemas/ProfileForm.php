@@ -6,6 +6,8 @@ use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TimePicker;
+use Filament\Schemas\Components\Utilities\Get;
 
 class ProfileForm
 {
@@ -70,6 +72,33 @@ class ProfileForm
                             ->required(),
                     ])
                     ->columns(3),
+
+                Section::make('Horaires d\'activité')
+                    ->schema([
+                        TimePicker::make('online_from')
+                        ->label('Heure début')
+                        ->seconds(false)
+                        ->nullable()
+                        ->rule(function (Get $get) {
+                            return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                if ($value && ! $get('online_to')) {
+                                    $fail('L’heure de fin est obligatoire.');
+                                }
+                            };
+                        }),
+                        TimePicker::make('online_to')
+                        ->label('Heure fin')
+                        ->seconds(false)
+                        ->nullable()
+                        ->rule(function (Get $get) {
+                            return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                if ($value && ! $get('online_from')) {
+                                    $fail('L’heure de début est obligatoire.');
+                                }
+                            };
+                        }),
+                    ])
+                    ->columns(2),
             ]);
     }
 }
