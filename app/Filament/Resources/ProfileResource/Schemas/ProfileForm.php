@@ -22,7 +22,13 @@ class ProfileForm
                             ->required()
                             ->maxLength(255),
                         Forms\Components\Textarea::make('biography')
+                            ->placeholder('Je suis une femme qui aime les hommes qui osent. 💋')
                             ->label('Biographie')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('description')
+                            ->placeholder('J\'aime ceux qui osent. 💋')
+                            ->label('Description')
                             ->rows(3)
                             ->columnSpanFull(),
                         Forms\Components\Toggle::make('is_online')
@@ -31,6 +37,7 @@ class ProfileForm
                         Forms\Components\TextInput::make('action_label')
                             ->label('Label du bouton d\'action')
                             ->placeholder("S'abonner au VIP d'alycia")
+                            ->columnSpanFull()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('script_url')
                             ->label('URL du script')
@@ -61,7 +68,7 @@ class ProfileForm
                         ->collection('logo')
                         ->conversion('logo_preview')
                         ->image()
-                        ->imageEditor(),
+                        ->imageEditor(false),
 
                     SpatieMediaLibraryFileUpload::make('certification_media')
                         ->disk('public')
@@ -79,7 +86,7 @@ class ProfileForm
                             ->numeric()
                             ->default(0)
                             ->required(),
-                            
+
                         Forms\Components\TextInput::make('videos_count')
                             ->label('Nombre de vidéos')
                             ->numeric()

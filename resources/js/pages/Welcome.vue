@@ -6,6 +6,7 @@ interface Profile {
     id: number;
     name: string;
     biography: string;
+    description: string | null;
     is_online: boolean;
     photos_count: number;
     is_within_online_hours: boolean;
@@ -41,9 +42,16 @@ const props = defineProps<{
     posts: Post[];
 }>();
 
+const age = computed(() => {
+    const today = new Date();
+    const birthdate = new Date(today.getFullYear() - 18, 0, 15);
+    return birthdate.toISOString().split('T')[0];
+});
+
 const activeTab = ref<'tout' | 'live' | 'rencontre'>('tout');
 const displayMode = ref<'list' | 'grid'>('list');
 const showStickyBar = ref(false);
+const showRencontreModal = ref(false);
 const actionBarRef = ref<HTMLElement | null>(null);
 const actionBarTop = ref(0);
 
@@ -140,6 +148,12 @@ onMounted(async () => {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('modal') === 'rencontre') {
+        activeTab.value = 'rencontre';
+        showRencontreModal.value = true;
     }
 });
 
@@ -330,7 +344,10 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Content (space reserved for avatar) -->
-                    <p class="text-white font-bold flex-1 text-sm sm:text-base pl-10 sm:pl-10 p-3 sm:p-4">
+                    <p v-if="profile.description" class="text-white font-bold flex-1 text-sm sm:text-base pl-10 sm:pl-10 p-3 sm:p-4">
+                        {{ profile.description }}
+                    </p>
+                    <p v-else class="text-white font-bold flex-1 text-sm sm:text-base pl-10 sm:pl-10 p-3 sm:p-4">
                         J'aime ceux qui osent. 💋
                     </p>
                 </div>
@@ -387,7 +404,7 @@ onUnmounted(() => {
                         </button>
 
                         <button
-                            @click="activeTab = 'rencontre'"
+                            @click="() => { activeTab = 'rencontre'; showRencontreModal = true; }"
                             :class="[
                                 'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
                                 activeTab === 'rencontre'
@@ -748,6 +765,106 @@ onUnmounted(() => {
             </div>
         </div>
         
+        <!-- Modal Rencontre -->
+        <Transition
+            enter-active-class="transition-opacity duration-200 ease-out"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-150 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="showRencontreModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            >
+                <div class="relative w-full h-full flex items-center justify-center p-4">
+                    <div class="relative w-full max-w-lg bg-black rounded-2xl border border-gray-800 shadow-2xl p-6 sm:p-8">
+                        <button
+                            type="button"
+                            class="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
+                            aria-label="Fermer"
+                            @click="showRencontreModal = false"
+                        >
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 mb-8 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center mb-4 overflow-hidden">
+                                <img
+                                    v-if="profile.avatar_url"
+                                    :src="profile.avatar_url"
+                                    :alt="profile.name"
+                                    class="w-full h-full object-cover"
+                                />
+                                <div v-else class="w-full h-full flex items-center justify-center text-gray-500">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- <p class="text-white font-semibold text-lg sm:text-xl mb-4">MyPrivate</p> -->
+
+                            <div class="grid grid-cols-3 gap-2 w-full mb-5">
+                                <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
+                                    Nudes et vidéos
+                                </button>
+                                <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
+                                    Chat illimité
+                                </button>
+                                <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
+                                    Rencontres
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <input type="hidden" name="gender" value="2" data-value-const="MALE">
+                            <input type="hidden" name="birthdate" :value="age">
+
+                            <input
+                                type="email"
+                                required
+                                placeholder="Mon Email"
+                                class="w-full bg-white text-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                            />
+                            <input
+                                type="text"
+                                required
+                                placeholder="Mon pseudo"
+                                class="w-full bg-white text-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                            />
+
+                            <label class="flex items-start gap-3 text-xs sm:text-sm text-gray-300 mt-4">
+                                <input type="checkbox" class="mt-1 accent-pink-500" />
+                                <span>
+                                    Je suis majeur(e) et j'accepte les
+                                    <a href="/cguv" class="text-pink-400 hover:text-pink-300 underline underline-offset-2">CGUV</a>
+                                    et la
+                                    <a href="/politique-de-confidentialite" class="text-pink-400 hover:text-pink-300 underline underline-offset-2">Politique de confidentialité</a>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-3 text-xs sm:text-sm text-gray-300">
+                                <input type="checkbox" class="mt-1 accent-pink-500" />
+                                <span>
+                                    J'accepte que mes données personnelles sensibles soient collectées et traitées par le site
+                                </span>
+                            </label>
+                        </div>
+
+                        <button
+                            class="mt-6 w-full bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white font-semibold rounded-full py-3 text-sm sm:text-base shadow-md hover:from-pink-600 hover:via-rose-600 hover:to-orange-500 transition-all"
+                        >
+                            REJOINDRE
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+
         <!-- Sticky Action Bar (appears when scrolling down) -->
         <Transition
             enter-active-class="transition-transform duration-300 ease-out"
@@ -791,7 +908,10 @@ onUnmounted(() => {
                         <p class="text-white font-medium text-sm sm:text-base truncate">
                             {{ profile.name }}
                         </p>
-                        <p class="text-gray-400 text-xs sm:text-sm truncate">
+                        <p v-if="profile.description" class="text-gray-400 text-xs sm:text-sm truncate">
+                            {{ profile.description }}
+                        </p>
+                        <p v-else class="text-gray-400 text-xs sm:text-sm truncate">
                             J'aime ceux qui osent. 💋
                         </p>
                     </div>

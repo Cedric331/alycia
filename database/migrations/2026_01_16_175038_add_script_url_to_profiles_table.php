@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('profiles', function (Blueprint $table) {
             $table->longText('script_url')->nullable()->after('action_label');
+            $table->string('description')->nullable()->after('script_url');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('profiles', function (Blueprint $table) {
             $table->dropColumn(['script_url']);
+            $table->dropColumn(['description']);
         });
     }
 };

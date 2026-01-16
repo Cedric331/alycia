@@ -65,6 +65,7 @@ Route::get('/', function () {
             'id' => $profile->id,
             'name' => $profile->name,
             'biography' => $profile->biography,
+            'description' => $profile->description,
             'is_online' => $profile->is_online,
             'is_within_online_hours' => $profile->isWithinOnlineHours(now(), 'Europe/Paris'),
             'photos_count' => $profile->photos_count,
@@ -80,6 +81,9 @@ Route::get('/', function () {
         'posts' => $posts,
     ]);
 })->name('home');
+
+Route::view('/cguv', 'cguv')->name('cguv');
+Route::view('/politique-de-confidentialite', 'politique-de-confidentialite')->name('politique.de.confidentialite');
 
 // Route dashboard commentée - pas d'authentification publique
 // Route::get('dashboard', function () {

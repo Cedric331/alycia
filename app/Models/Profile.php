@@ -25,6 +25,7 @@ class Profile extends Model implements HasMedia
         'online_from',
         'online_to',
         'script_url',
+        'description',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class Profile extends Model implements HasMedia
         'online_from' => 'string',
         'online_to' => 'string',
         'script_url' => 'string',
+        'description' => 'string',
     ];
 
     public function registerMediaConversions(?Media $media = null): void
