@@ -678,11 +678,16 @@ onUnmounted(() => {
                         <!-- LIVE Badge -->
                         <div 
                             v-if="post.is_live && (post.type === 'video' || post.type === 'live')"
-                            class="absolute top-2 left-2 z-30 bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 animate-pulse"
-                        >
+                            class="absolute top-2 left-2 z-30
+                                    bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                    text-white px-2 py-0.5 rounded
+                                    text-xs font-bold flex items-center gap-1
+                                    animate-pulse shadow-md"
+                            >
                             <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
                             LIVE
                         </div>
+
 
                         <!-- Video duration (top-right) -->
                         <div 
