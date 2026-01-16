@@ -358,8 +358,7 @@ onUnmounted(() => {
 
                 <!-- Subscribe Button -->
                 <a
-                    id="ctaintro"
-                    href="https://example.com"
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="block w-full text-center
@@ -479,7 +478,7 @@ onUnmounted(() => {
                                     class="relative z-10 w-8 h-8 sm:w-10 sm:h-10
                                             rounded-full overflow-hidden bg-gray-800"
                                     >
-                                    <a href="https://example.com" target="_blank" rel="noopener noreferrer">
+                                    <a href="#" target="_blank" rel="noopener noreferrer">
                                         <img
                                             v-if="profile.avatar_url"
                                             :src="profile.avatar_url"
@@ -579,8 +578,7 @@ onUnmounted(() => {
                                 <!-- Lock Overlay avec photo de profil (uniquement si flouté) -->
                                 <a
                                 v-if="post.is_blurred"
-                                id="ctadebloquer"
-                                href="https://example.com"
+                                href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="absolute inset-0 z-30
@@ -737,7 +735,7 @@ onUnmounted(() => {
                         <!-- Lock Overlay (uniquement si flouté) hover display svg lock -->
                         <a 
                             v-if="post.is_blurred"
-                            href="https://example.com"
+                            href="#"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center cursor-pointer"
@@ -831,14 +829,12 @@ onUnmounted(() => {
                             <input type="hidden" name="birthdate" :value="age">
 
                             <input
-                                id="email_7MLiP"
                                 type="email"
                                 required
                                 placeholder="Mon Email"
                                 class="w-full bg-white text-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
                             />
                             <input
-                                id="input_7MLiP"
                                 type="text"
                                 required
                                 placeholder="Mon pseudo"
@@ -921,8 +917,8 @@ onUnmounted(() => {
                             J'aime ceux qui osent. 💋
                         </p>
                     </div>
-                    <a  id="ctaconclusion"
-                        href="https://example.com"
+                    <a 
+                        href="#"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
