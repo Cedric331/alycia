@@ -104,10 +104,6 @@ const isOnline = () => {
     return props.profile.is_online || props.profile.is_within_online_hours || isLive();
 };
 
-const subscribe = () => {
-    document.getElementById('ctaintro')?.click();
-};
-
 // Gestion du scroll pour la sticky bar
 const handleScroll = () => {
     if (actionBarRef.value) {
@@ -358,6 +354,7 @@ onUnmounted(() => {
 
                 <!-- Subscribe Button -->
                 <a
+                    id="ctaintro"
                     href="#"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -859,7 +856,6 @@ onUnmounted(() => {
                         </div>
 
                         <button
-                           @click="subscribe()"
                             class="mt-6 w-full bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white font-semibold rounded-full py-3 text-sm sm:text-base shadow-md hover:from-pink-600 hover:via-rose-600 hover:to-orange-500 transition-all"
                         >
                             REJOINDRE
@@ -929,6 +925,7 @@ onUnmounted(() => {
                         </p>
                     </div>
                     <a 
+                        id="ctaconclusion"
                         href="#"
                         target="_blank"
                         rel="noopener noreferrer"
