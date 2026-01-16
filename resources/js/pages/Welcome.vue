@@ -712,7 +712,7 @@ onUnmounted(() => {
                             @dragstart.prevent
                         ></div>
                         
-                        <!-- Lock Overlay (uniquement si flouté) -->
+                        <!-- Lock Overlay (uniquement si flouté) hover display svg lock -->
                         <a 
                             v-if="post.is_blurred"
                             href="#"
@@ -720,7 +720,7 @@ onUnmounted(() => {
                             rel="noopener noreferrer"
                             class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center cursor-pointer"
                         >
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20 group-hover:hidden">
                                 <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
