@@ -869,6 +869,17 @@ onUnmounted(() => {
             </div>
         </Transition>
 
+        <Transition
+            enter-active-class="transition-transform duration-300 ease-out"
+            enter-from-class="translate-y-full"
+            enter-to-class="translate-y-0"
+            leave-active-class="transition-transform duration-300 ease-in"
+            leave-from-class="translate-y-0"
+            leave-to-class="translate-y-full"
+        >
+        <div id="selector" class="fixed inset-0 z-[200] pointer-events-none"></div>
+        </Transition>
+
         <!-- Sticky Action Bar (appears when scrolling down) -->
         <Transition
             enter-active-class="transition-transform duration-300 ease-out"
