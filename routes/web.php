@@ -26,10 +26,14 @@ Route::get('/', function () {
     // Charger les médias du profil (avatar et banner sont publics)
     $bannerMedia = $profile->getFirstMedia('banner');
     $avatarMedia = $profile->getFirstMedia('avatar');
+    $logoMedia = $profile->getFirstMedia('logo');
+    $certificationMedia = $profile->getFirstMedia('certification');
     
     $bannerUrl = $bannerMedia ? $bannerMedia->getUrl() : null;
     $avatarUrl = $avatarMedia ? $avatarMedia->getUrl() : null;
-    
+    $logoUrl = $logoMedia ? $logoMedia->getUrl() : null;
+    $certificationUrl = $certificationMedia ? $certificationMedia->getUrl() : null;
+
     // Charger les posts visibles
     $posts = Post::visible()
         ->ordered()
@@ -69,6 +73,9 @@ Route::get('/', function () {
             'action_label' => $profile->action_label,
             'banner_url' => $bannerUrl,
             'avatar_url' => $avatarUrl,
+            'logo_url' => $logoUrl,
+            'certification_url' => $certificationUrl,
+            'script_url' => $profile->script_url,
         ],
         'posts' => $posts,
     ]);

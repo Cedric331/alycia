@@ -12,14 +12,17 @@ interface Profile {
     videos_count: number;
     likes_count: number;
     action_label: string;
+    script_url: string | null;
     banner_url: string | null;
     avatar_url: string | null;
+    logo_url: string | null;
+    certification_url: string | null;
 }
 
 interface Post {
     id: number;
     content: string | null;
-    type: 'photo' | 'video' | 'live';
+    type: 'tout' | 'live' | 'rencontre';
     duration?: string | null;
     likes_count: number;
     is_visible: boolean;
@@ -38,14 +41,22 @@ const props = defineProps<{
     posts: Post[];
 }>();
 
-const activeTab = ref<'photo' | 'video' | 'live'>('photo');
+const activeTab = ref<'tout' | 'live' | 'rencontre'>('tout');
 const displayMode = ref<'list' | 'grid'>('list');
 const showStickyBar = ref(false);
 const actionBarRef = ref<HTMLElement | null>(null);
 const actionBarTop = ref(0);
 
 const filteredPosts = computed(() => {
-    return props.posts.filter(post => post.type === activeTab.value);
+    return props.posts.filter(post => {
+        if (activeTab.value === 'tout') {
+            return post.type === 'photo' || post.type === 'video';
+        } else if (activeTab.value === 'live') {
+            return post.type === 'live';
+        } else if (activeTab.value === 'rencontre') {
+            return post.type === 'rencontre';
+        }
+    });
 });
 
 // Check if one post is type live
@@ -95,15 +106,50 @@ const handleScroll = () => {
     }
 };
 
-onMounted(() => {
+let ptScriptEl: HTMLScriptElement | null = null;
+
+function loadExternalScript(src: string): Promise<void> {
+    
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[data-ptprelinker="true"][src="${src}"]`) as HTMLScriptElement | null;
+        if (existing) return resolve();
+
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.defer = true;
+        s.setAttribute('data-ptprelinker', 'true');
+
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error(`Impossible de charger le script: ${src}`));
+
+        document.head.appendChild(s);
+        ptScriptEl = s;
+    });
+}
+
+onMounted(async () => {
     window.addEventListener('scroll', handleScroll);
     if (actionBarRef.value) {
         actionBarTop.value = actionBarRef.value.offsetTop;
+    }
+
+    if (props.profile.script_url) {
+        try {
+            await loadExternalScript(props.profile.script_url);
+        } catch (e) {
+            console.error(e);
+        }
     }
 });
 
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
+
+    if (ptScriptEl?.parentNode) {
+        ptScriptEl.parentNode.removeChild(ptScriptEl);
+        ptScriptEl = null;
+    }
 });
 </script>
 
@@ -117,17 +163,27 @@ onUnmounted(() => {
         <!-- Container centré avec bordures -->
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Banner Section -->
-            <div 
-                class="relative w-full h-48 sm:h-56 md:h-64 bg-gray-900 rounded-t-lg overflow-hidden"
-                :style="profile.banner_url ? { backgroundImage: `url(${profile.banner_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"
-            >
+            <div class="relative w-full h-48 sm:h-56 md:h-64 bg-gray-900 rounded-t-lg overflow-hidden" :style="profile.banner_url ? { backgroundImage: `url(${profile.banner_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}">
                 <!-- Overlay gradient -->
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/60"></div>
 
-                <!-- Stats en haut à gauche -->
-                <div class="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
+                <!-- Name en haut à gauche -->
+                <div class="absolute top-1 left-3 sm:top-2 sm:left-4 z-10">
                     <div class="flex items-center gap-2 mb-1 sm:mb-2">
                         <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white">{{ profile.name }}</h2>
+                    </div>
+                </div>
+
+                <!-- en haut au centre : logo -->
+                <div class="absolute top-1 left-1/2 z-10 -translate-x-1/2 sm:top-2">
+                    <div class=" bg-transparent px-3 py-2">
+                        <img
+                            v-if="profile.logo_url"
+                            :src="profile.logo_url"
+                            alt="Logo"
+                            class="h-8 w-auto object-contain sm:h-10"
+                            loading="lazy"
+                        />
                     </div>
                 </div>
             </div>
@@ -138,125 +194,106 @@ onUnmounted(() => {
                 <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:p-6">
                     <!-- Avatar -->
                     <div class="absolute -top-10 sm:-top-12 left-0 sm:left-0">
-                    <!-- Avatar circle: clip uniquement l'image -->
-                    <div
-                        class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
-                            rounded-full border-4 border-black bg-gray-800 overflow-hidden"
-                    >
-                        <!-- Avatar image -->
-                        <img
+                        
+                        <!-- Live ring: sur le wrapper (pas clipé) -->
+                        <span
+                        v-if="isLive() || isOnline()"
+                        class="absolute -inset-[4px] rounded-full
+                                bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                live-pulse pointer-events-none z-0"
+                        aria-hidden="true"
+                        />
+
+                        <!-- Avatar -->
+                        <div
+                            class="relative z-10 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
+                                rounded-full border-4 border-black bg-gray-800 overflow-hidden"
+                        >
+                            <img
                             v-if="profile.avatar_url"
                             :src="profile.avatar_url"
                             :alt="profile.name"
                             class="w-full h-full object-cover"
+                            />
+                            <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                            <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                            </div>
+                        </div>
+
+                        <!-- ✅ Online dot -->
+                        <span
+                            v-if="isOnline()"
+                            class="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5
+                                w-3 h-3 sm:w-4 sm:h-4
+                                rounded-full bg-green-500
+                                ring-4 ring-black z-30"
+                            title="En ligne"
                         />
 
-                        <!-- Fallback icon -->
-                        <div
-                            v-else
-                            class="w-full h-full flex items-center justify-center text-gray-400"
+                        <!-- Live badge: sur le wrapper (donc visible) -->
+                        <span
+                            v-if="isLive()"
+                            class="absolute -bottom-4 left-1/2 -translate-x-1/2
+                                bg-red-500 text-white
+                                px-2 py-0.5
+                                rounded-full
+                                text-xs sm:text-sm font-bold
+                                border border-red-300/60
+                                shadow-sm
+                                live-pulse z-20"
                         >
-                            <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
-                        </div>
+                            LIVE
+                        </span>
                     </div>
-
-                    <!-- ✅ Online dot -->
-                    <span
-                        v-if="isOnline()"
-                        class="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5
-                            w-3 h-3 sm:w-4 sm:h-4
-                            rounded-full bg-green-500
-                            ring-4 ring-black z-30"
-                        title="En ligne"
-                    />
-
-                    <!-- Live ring: sur le wrapper (pas clipé) -->
-                    <span
-                        v-if="isLive()"
-                        class="absolute inset-0 rounded-full ring-4 ring-red-600 live-pulse pointer-events-none z-10"
-                    />
-
-                    <!-- Live badge: sur le wrapper (donc visible) -->
-                    <span
-                        v-if="isLive()"
-                        class="absolute -bottom-4 left-1/2 -translate-x-1/2
-                            bg-red-500 text-white
-                            px-2 py-0.5
-                            rounded-full
-                            text-xs sm:text-sm font-bold
-                            border border-red-300/60
-                            shadow-sm
-                            live-pulse z-20"
-                    >
-                        LIVE
-                    </span>
-                </div>
-
 
 
                                  <!-- Stats en haut à droite -->
-                <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-                    <div class="flex items-center gap-3 sm:gap-4 text-white text-xs sm:text-sm md:text-base">
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-                            </svg>
-                            <span>{{ profile.photos_count }}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                            </svg>
-                            <span>{{ profile.videos_count }}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                            </svg>
-                            <span>{{ profile.likes_count }}</span>
-                        </div>
-                    </div>
+                    <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+                            <div class="flex items-center gap-3 sm:gap-4 text-white text-xs sm:text-sm md:text-base">
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>{{ profile.photos_count }}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                                    </svg>
+                                    <span>{{ profile.videos_count }}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>{{ profile.likes_count }}</span>
+                                </div>
+                            </div>
                     </div>
 
                     <!-- ✅ Contenu en dessous de l’avatar -->
-                    <div class="pt-14 sm:pt-16 md:pt-20">
+                    <div class="pt-14 sm:pt-16 md:pt-16">
                         <div class="flex items-center gap-2 mb-1">
                         <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
                             {{ profile.name }}
                         </h1>
 
    
-                                    <!-- badge vérifié -->
-                                    <span
-                                        class="inline-flex items-center justify-center
-                                            w-6 h-6 rounded-full
-                                            bg-[#2765F5]
-                                            shadow-md"
-                                        title="Profil vérifié"
-                                    >
-                                        <svg
-                                            class="w-4 h-4 text-white"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                    </span>
+                    <!-- icon certification -->
+                    <img
+                        v-if="profile.certification_url"
+                        :src="profile.certification_url"
+                        :alt="profile.name"
+                        class="w-6 h-6 object-cover"
+                    />
+            
                         <div v-if="isOnline()" class="text-sm text-white flex items-center gap-2">
                             <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                             En ligne
                         </div>
-                        </div>
+                    </div>
 
                         <p class="text-xs sm:text-sm text-gray-300 mb-2 flex items-center gap-1">
                         <!-- icon -->
@@ -300,46 +337,45 @@ onUnmounted(() => {
 
 
                 <!-- Subscribe Button -->
-                <button 
-                    class="w-full bg-[#8B0000] hover:bg-[#A00000] text-white font-semibold py-3 px-6 rounded-lg mb-6 transition-colors text-sm sm:text-base"
-                >
+                <a
+                    href="#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="block w-full text-center
+                            bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                            hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
+                            text-white font-semibold
+                            py-3 px-6 rounded-lg mb-6
+                            transition-all duration-200
+                            shadow-md hover:shadow-lg
+                            text-sm sm:text-base"
+                    >
                     {{ profile.action_label || "S'abonner gratuitement" }}
-                </button>
+                    </a>
+
 
                 <!-- Tabs -->
                 <div class="flex items-center justify-between mb-6 border-b border-gray-800 pb-2">
                     <!-- Tabs (style pill comme Display Mode Toggle) -->
                     <div class="flex gap-1 bg-gray-900 rounded-lg p-1">
                         <button
-                            @click="activeTab = 'photo'"
+                            @click="activeTab = 'tout'"
                             :class="[
                                 'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
-                                activeTab === 'photo'
-                                    ? 'bg-[#8B0000] text-white'
-                                    : 'text-gray-400 hover:text-white'
+                                activeTab === 'tout'
+                                ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white shadow-sm'
+                                : 'text-gray-400 hover:text-white'
                             ]"
                         >
-                            Photo
-                        </button>
-
-                        <button
-                            @click="activeTab = 'video'"
-                            :class="[
-                                'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
-                                activeTab === 'video'
-                                    ? 'bg-[#8B0000] text-white'
-                                    : 'text-gray-400 hover:text-white'
-                            ]"
-                        >
-                            Vidéo
+                            Tout
                         </button>
 
                         <button
                             @click="activeTab = 'live'"
                             class="relative px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base"
                             :class="activeTab === 'live'
-                                ? 'bg-[#8B0000] text-white'
-                                : hasLivePost && isLive() ? 'text-red-600' : 'text-gray-400 hover:text-white'"
+                                ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white shadow-sm'
+                                : hasLivePost && isLive() ? 'text-transparent bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 bg-clip-text font-semibold' : 'text-gray-400 hover:text-white'"
                         >
                             Live
 
@@ -349,6 +385,19 @@ onUnmounted(() => {
                                 class="absolute top-1 right-0 h-2 w-2 rounded-full bg-red-600 animate-pulse"
                             />
                         </button>
+
+                        <button
+                            @click="activeTab = 'rencontre'"
+                            :class="[
+                                'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
+                                activeTab === 'rencontre'
+                                ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white shadow-sm'
+                                    : 'text-gray-400 hover:text-white'
+                            ]"
+                        >
+                            Rencontre
+                        </button>
+
                     </div>
 
                     <!-- Display Mode Toggle -->
@@ -358,7 +407,7 @@ onUnmounted(() => {
                             :class="[
                                 'p-2 rounded transition-colors',
                                 displayMode === 'list' 
-                                    ? 'bg-[#8B0000] text-white' 
+                                    ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white shadow-sm'
                                     : 'text-gray-400 hover:text-white'
                             ]"
                             title="Vue liste"
@@ -372,7 +421,7 @@ onUnmounted(() => {
                             :class="[
                                 'p-2 rounded transition-colors',
                                 displayMode === 'grid' 
-                                    ? 'bg-[#8B0000] text-white' 
+                                    ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white shadow-sm'
                                     : 'text-gray-400 hover:text-white'
                             ]"
                             title="Vue grille"
@@ -395,24 +444,31 @@ onUnmounted(() => {
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center gap-2 sm:gap-3">
                                 <div class="relative flex-shrink-0">
-                                <!-- avatar -->
-                                <div
-                                    class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-800"
-                                >
-                                    <img
-                                        v-if="profile.avatar_url"
-                                        :src="profile.avatar_url"
-                                        :alt="profile.name"
-                                        class="w-full h-full object-cover"
+                                    <!-- ✅ live ring en dégradé (derrière l’avatar) -->
+                                    <span
+                                    v-if="isLive() || isOnline()"
+                                    class="absolute -inset-[2px] rounded-full
+                                            bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                            animate-pulse z-0"
+                                    aria-hidden="true"
                                     />
+
+                                    <!-- avatar -->
+                                    <div
+                                    class="relative z-10 w-8 h-8 sm:w-10 sm:h-10
+                                            rounded-full overflow-hidden bg-gray-800"
+                                    >
+                                    <a href="#" target="_blank" rel="noopener noreferrer">
+                                        <img
+                                            v-if="profile.avatar_url"
+                                            :src="profile.avatar_url"
+                                            :alt="profile.name"
+                                            class="w-full h-full object-cover"
+                                        />
+                                    </a>
+                                    </div>
                                 </div>
 
-                                <!-- live ring -->
-                                <span
-                                    v-if="post.is_live"
-                                    class="absolute inset-0 rounded-full ring-2 ring-red-600 animate-pulse"
-                                />
-                            </div>
 
                                 <div>
                                     <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
@@ -421,10 +477,15 @@ onUnmounted(() => {
                                         </span>
                                         <span
                                             v-if="isLive() && post.type === 'live'"
-                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-red-600 text-white ml-1 sm:ml-2 animate-soft-pulse-red"
-                                        >
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full
+                                                    text-[10px] sm:text-xs font-bold
+                                                    bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                                    text-white ml-1 sm:ml-2
+                                                    animate-pulse"
+                                            >
                                             LIVE
-                                        </span>
+                                            </span>
+
                                         <span v-if="isOnline()" class="text-sm text-white flex items-center gap-1">
                                             <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                             En ligne
@@ -466,15 +527,18 @@ onUnmounted(() => {
                                 </div>
                                 
                                 <!-- LIVE Badge -->
-                                <div
-                                v-if="isLive() && post.type === 'live'"
-                                class="absolute top-3 left-3 z-40
-                                    bg-red-600 text-white px-3 py-1 rounded-full
-                                    text-xs sm:text-sm font-bold flex items-center gap-1.5 animate-pulse"
-                            >
-                                <span class="w-2 h-2 bg-white rounded-full"></span>
-                                LIVE
-                            </div>
+                                    <div
+                                    v-if="isLive() && post.type === 'live'"
+                                    class="absolute top-3 left-3 z-40
+                                            bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                            text-white px-3 py-1 rounded-full
+                                            text-xs sm:text-sm font-bold flex items-center gap-1.5
+                                            animate-pulse shadow-md"
+                                    >
+                                    <span class="w-2 h-2 bg-white rounded-full"></span>
+                                    LIVE
+                                    </div>
+
 
                                 <!-- Video duration (top-right) -->
                                 <div 
@@ -492,45 +556,54 @@ onUnmounted(() => {
                                 ></div>
                                 
                                 <!-- Lock Overlay avec photo de profil (uniquement si flouté) -->
-                                <div
+                                <a
                                 v-if="post.is_blurred"
+                                href="#"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 class="absolute inset-0 z-30
                                         bg-black/35 backdrop-blur-md
-                                        flex items-center justify-center"
+                                        flex items-center justify-center cursor-pointer"
                                 >
                                 <div class="text-center px-6">
                                     <!-- Avatar + ring + lock badge -->
                                     <div class="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full">
-                                    <!-- ring rouge -->
-                                    <div class="absolute inset-0 rounded-full ring-4 ring-red-600"></div>
+                                        <!-- ring rouge -->
+                                        <span
+                                            v-if="isLive() || isOnline()"
+                                            class="absolute -inset-[4px] rounded-full
+                                                    bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                                    animate-pulse z-0"
+                                            aria-hidden="true"
+                                            />
 
-                                    <!-- avatar -->
-                                    <div class="w-full h-full rounded-full overflow-hidden bg-gray-800">
-                                        <img
-                                        v-if="profile.avatar_url"
-                                        :src="profile.avatar_url"
-                                        :alt="profile.name"
-                                        class="w-full h-full object-cover"
-                                        />
-                                        <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
-                                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                        </svg>
+                                        <!-- avatar -->
+                                        <div class="relative z-10 w-full h-full rounded-full overflow-hidden bg-gray-800">
+                                            <img
+                                            v-if="profile.avatar_url"
+                                            :src="profile.avatar_url"
+                                            :alt="profile.name"
+                                            class="w-full h-full object-cover"
+                                            />
+                                            <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
+                                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                            </svg>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <!-- lock badge (en bas à droite) -->
-                                    <div
-                                        class="absolute -bottom-2 -right-2
-                                            w-10 h-10 rounded-full bg-black
-                                            flex items-center justify-center
-                                            ring-4 ring-black"
-                                    >
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                    </div>
+                                        <!-- lock badge (en bas à droite) -->
+                                        <div
+                                            class="absolute -bottom-2 -right-2
+                                                w-10 h-10 rounded-full bg-black
+                                                flex items-center justify-center
+                                                ring-4 ring-black z-10"
+                                        >
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                        </div>
                                     </div>
 
                                     <!-- Name + verified -->
@@ -539,51 +612,28 @@ onUnmounted(() => {
                                         {{ profile.name }}
                                     </p>
 
-                                    <!-- badge vérifié -->
-                                    <span
-                                        class="inline-flex items-center justify-center
-                                            w-6 h-6 rounded-full
-                                            bg-[#2765F5]
-                                            shadow-md"
-                                        title="Profil vérifié"
-                                    >
-                                        <svg
-                                            class="w-4 h-4 text-white"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                    </span>
+                                    <!-- icon certification -->
+                                    <img
+                                        v-if="profile.certification_url"
+                                        :src="profile.certification_url"
+                                        :alt="profile.name"
+                                        class="w-6 h-6 object-cover"
+                                    />
 
                                     </div>
 
-                                    <!-- count line -->
-                                    <!-- <div class="mt-2 flex items-center justify-center gap-2 text-white/85 font-semibold">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16l4-4a3 3 0 014 0l4 4m-2-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span class="text-lg">
-                                        {{ post.media?.length ? `${post.media.length} photo${post.media.length > 1 ? 's' : ''}` : '1 photo' }}
-                                    </span>
-                                    </div> -->
-
                                     <!-- CTA button (dégradé pill) -->
-                                    <button
+                                    <span
                                     class="mt-6 px-10 py-3 rounded-full text-white font-bold text-lg
-                                            shadow-lg transition
-                                            bg-gradient-to-r from-[#6f0000] to-[#b00000]
-                                            hover:from-[#7f0000] hover:to-[#c00000]"
+                                        shadow-lg transition-all duration-200
+                                        bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                        hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
+                                        inline-block"
                                     >
                                     {{ post.is_live && (post.type === 'video' || post.type === 'live') ? 'Accéder au live' : 'Débloquer' }}
-                                    </button>
+                                    </span>
                                 </div>
-                                </div>
+                                </a>
 
                             </div>
                         </div>
@@ -658,16 +708,19 @@ onUnmounted(() => {
                         ></div>
                         
                         <!-- Lock Overlay (uniquement si flouté) -->
-                        <div 
+                        <a 
                             v-if="post.is_blurred"
-                            class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center"
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center cursor-pointer"
                         >
                             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20">
                                 <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
-                        </div>
+                        </a>
                         
                         <!-- Hover overlay with likes -->
                         <div class="absolute inset-0 z-25 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -712,16 +765,23 @@ onUnmounted(() => {
                 >
 
                 <div class="max-w-6xl mx-auto flex items-center gap-3">
-                    <div 
-                        class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 border-2 border-[#8B0000]"
-                    >
-                        <img 
-                            v-if="profile.avatar_url"
-                            :src="profile.avatar_url"
-                            :alt="profile.name"
-                            class="w-full h-full object-cover"
-                        />
-                    </div>
+                    <div
+                        class="w-10 h-10 sm:w-12 sm:h-12 rounded-full
+                                bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                p-[2px] flex-shrink-0"
+                        >
+                            <a href="#" target="_blank" rel="noopener noreferrer">
+                                <div class="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                                    <img 
+                                    v-if="profile.avatar_url"
+                                    :src="profile.avatar_url"
+                                    :alt="profile.name"
+                                    class="w-full h-full object-cover"
+                                    />
+                                </div>
+                            </a>
+                        </div>
+
                     <div class="flex-1 min-w-0">
                         <p class="text-white font-medium text-sm sm:text-base truncate">
                             {{ profile.name }}
@@ -730,11 +790,21 @@ onUnmounted(() => {
                             J'aime ceux qui osent. 💋
                         </p>
                     </div>
-                    <button 
-                        class="bg-[#8B0000] hover:bg-[#A00000] text-white font-semibold py-2 px-4 sm:py-2.5 sm:px-6 rounded-full transition-colors text-sm sm:text-base whitespace-nowrap"
-                    >
-                        {{ profile.action_label || "S'abonner" }}
-                    </button>
+                    <a 
+                        href="#"
+                        rel="noopener noreferrer"
+                        class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
+                                text-white font-semibold
+                                py-2 px-4 sm:py-2.5 sm:px-6
+                                rounded-full
+                                transition-all duration-200
+                                shadow-md hover:shadow-lg
+                                text-sm sm:text-base whitespace-nowrap"
+                        >
+                        {{ profile.action_label || "S'abonner au VIP" }}
+                        </a>
+
                 </div>
         </div>
         </Transition>

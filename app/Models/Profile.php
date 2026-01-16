@@ -24,12 +24,14 @@ class Profile extends Model implements HasMedia
         'action_label',
         'online_from',
         'online_to',
+        'script_url',
     ];
 
     protected $casts = [
         'is_online' => 'boolean',
         'online_from' => 'string',
         'online_to' => 'string',
+        'script_url' => 'string',
     ];
 
     public function registerMediaConversions(?Media $media = null): void
@@ -43,6 +45,16 @@ class Profile extends Model implements HasMedia
             ->fit(Fit::Crop, 1200, 450)
             ->nonQueued()
             ->performOnCollections('banner');
+
+        $this->addMediaConversion('logo_preview')
+            ->fit(Fit::Crop, 1200, 450)
+            ->nonQueued()
+            ->performOnCollections('logo');
+
+        $this->addMediaConversion('certification_preview')
+            ->fit(Fit::Crop, 100, 100)
+            ->nonQueued()
+            ->performOnCollections('certification');
     }
     
 

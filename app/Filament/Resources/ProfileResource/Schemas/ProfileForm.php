@@ -32,23 +32,43 @@ class ProfileForm
                             ->label('Label du bouton d\'action')
                             ->placeholder("S'abonner au VIP d'alycia")
                             ->maxLength(255),
+                        Forms\Components\TextInput::make('script_url')
+                            ->label('URL du script')
+                            ->placeholder('https://c.op4pro.com/8/js/script.js')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
 
                 Section::make('Médias')
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('banner_media')
+                        ->disk('public')
                         ->collection('banner')
                         ->conversion('banner_preview')
                         ->image()
                         ->imageEditor(),
                     
                     SpatieMediaLibraryFileUpload::make('avatar_media')
+                        ->disk('public')
                         ->collection('avatar')
                         ->conversion('avatar_preview')
                         ->image()
                         ->imageEditor()
                         ->avatar(),
+
+                    SpatieMediaLibraryFileUpload::make('logo_media')
+                        ->disk('public')
+                        ->collection('logo')
+                        ->conversion('logo_preview')
+                        ->image()
+                        ->imageEditor(),
+
+                    SpatieMediaLibraryFileUpload::make('certification_media')
+                        ->disk('public')
+                        ->collection('certification')
+                        ->conversion('certification_preview')
+                        ->image()
+                        ->imageEditor(),
                     ]),
 
                 Section::make('Indicateurs')
@@ -59,11 +79,13 @@ class ProfileForm
                             ->numeric()
                             ->default(0)
                             ->required(),
+                            
                         Forms\Components\TextInput::make('videos_count')
                             ->label('Nombre de vidéos')
                             ->numeric()
                             ->default(0)
                             ->required(),
+
                         Forms\Components\TextInput::make('likes_count')
                             ->label('Nombre de likes')
                             ->numeric()
