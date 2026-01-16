@@ -122,6 +122,20 @@ const isOnline = () => {
     return props.profile.is_online || props.profile.is_within_online_hours || isLive();
 };
 
+const triggerDebloquerCta = () => {
+    const el = document.getElementById('ctaintro');
+    if (!el) return;
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+};
+
+const triggerConclusionCta = async () => {
+    showRencontreModal.value = true;
+    await nextTick();
+    const el = document.getElementById('ctaintro');
+    if (!el) return;
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+};
+
 // Gestion du scroll pour la sticky bar
 const handleScroll = () => {
     if (actionBarRef.value) {
@@ -373,7 +387,6 @@ onUnmounted(() => {
                 <a
                         id="ctaintro"
                         @click="showRencontreModal = true"
-                        href="#"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="block w-full text-center
@@ -382,7 +395,7 @@ onUnmounted(() => {
                                 text-white font-semibold
                                 py-3 px-6 rounded-lg mb-6
                                 transition-all duration-200
-                                shadow-md hover:shadow-lg
+                                shadow-md hover:shadow-lg hover:cursor-pointer
                                 text-sm sm:text-base"
                         >
                 {{ profile.action_label || "S'abonner au VIP" }}
@@ -421,7 +434,7 @@ onUnmounted(() => {
                         </button>
                             
                         <button
-                            @click="() => { activeTab = 'rencontre'; showRencontreModal = true; }"
+                            @click="triggerConclusionCta"
                             :class="[
                                 'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
                                 activeTab === 'rencontre'
@@ -492,14 +505,13 @@ onUnmounted(() => {
                                     class="relative z-10 w-8 h-8 sm:w-10 sm:h-10
                                             rounded-full overflow-hidden bg-gray-800"
                                     >
-                                    <a href="#" target="_blank" rel="noopener noreferrer">
                                         <img
                                             v-if="profile.avatar_url"
                                             :src="profile.avatar_url"
                                             :alt="profile.name"
                                             class="w-full h-full object-cover"
                                         />
-                                    </a>
+                        
                                     </div>
                                 </div>
 
@@ -590,11 +602,10 @@ onUnmounted(() => {
                                 ></div>
                                 
                                 <!-- Lock Overlay avec photo de profil (uniquement si flouté) -->
-                                <a
+                                <button
                                 v-if="post.is_blurred"
-                                id="ctadebloquer"
-                                @click="showRencontreModal = true"
-                                target="_blank"
+                                type="button"
+                                @click="() => { showRencontreModal = true; triggerDebloquerCta(); }"
                                 class="absolute inset-0 z-30
                                         bg-black/35 backdrop-blur-md
                                         flex items-center justify-center cursor-pointer"
@@ -667,7 +678,7 @@ onUnmounted(() => {
                                     {{ post.is_live && (post.type === 'video' || post.type === 'live') ? 'Accéder au live' : 'Débloquer' }}
                                     </span>
                                 </div>
-                                </a>
+                                </button>
 
                             </div>
                         </div>
@@ -747,22 +758,49 @@ onUnmounted(() => {
                         ></div>
                         
                         <!-- Lock Overlay (uniquement si flouté) hover display svg lock -->
-                        <a 
+                        <button 
                             v-if="post.is_blurred"
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="absolute inset-0 z-20 bg-black/40 flex items-center justify-center cursor-pointer"
+                            type="button"
+                            @click="() => { showRencontreModal = true; triggerDebloquerCta(); }"
+                            class="absolute inset-0 z-20 bg-black/40 flex flex-col items-center justify-center gap-2 cursor-pointer"
                         >
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20 group-hover:hidden">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20">
                                 <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
-                        </a>
+
+                            <span
+                                class="px-3 py-1 rounded-full text-white font-semibold text-xs sm:text-sm
+                                    shadow-lg transition-all duration-200
+                                    bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                    hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
+                                    inline-block"
+                            >
+                                {{ post.is_live && (post.type === 'video' || post.type === 'live') ? 'Accéder au live' : 'Débloquer' }}
+                            </span>
+                        </button>
+
                         
                         <!-- Hover overlay with likes -->
-                        <div class="absolute inset-0 z-25 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <button
+                            v-if="post.is_blurred"
+                            type="button"
+                            @click="triggerConclusionCta"
+                            class="absolute inset-0 z-25 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 hover:cursor-pointer"
+                        >
+                            <div class="flex items-center gap-2 text-white">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="font-semibold">{{ post.likes_count }}</span>
+                            </div>
+                           
+                        </button>
+                        <div
+                            v-else
+                            class="absolute inset-0 z-25 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+                        >
                             <div class="flex items-center gap-2 text-white">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
@@ -895,22 +933,20 @@ onUnmounted(() => {
                         </p>
                     </div>
 
-                    <a  
-                        id="ctaconclusion"
-                        @click="showRencontreModal = true"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <button  
+                        type="button"
+                        @click="triggerConclusionCta"
                         class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
                                 hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
                                 text-white font-semibold
                                 py-2 px-4 sm:py-2.5 sm:px-6
                                 rounded-full
                                 transition-all duration-200
-                                shadow-md hover:shadow-lg
+                                shadow-md hover:shadow-lg hover:cursor-pointer
                                 text-sm sm:text-base whitespace-nowrap"
                         >
                         {{ profile.action_label || "S'abonner au VIP" }}
-                        </a>
+                        </button>
 
                 </div>
         </div>

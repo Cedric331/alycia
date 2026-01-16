@@ -82,8 +82,6 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::view('/cguv', 'cguv')->name('cguv');
-Route::view('/politique-de-confidentialite', 'politique-de-confidentialite')->name('politique.de.confidentialite');
 
 // Route dashboard commentée - pas d'authentification publique
 // Route::get('dashboard', function () {
