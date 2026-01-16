@@ -923,6 +923,7 @@ onUnmounted(() => {
                     </div>
                     <a  id="ctaconclusion"
                         href="https://example.com"
+                        target="_blank"
                         rel="noopener noreferrer"
                         class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
                                 hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
