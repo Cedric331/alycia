@@ -897,6 +897,7 @@ onUnmounted(() => {
 
                     <a  
                         id="ctaconclusion"
+                        @click="showRencontreModal = true"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
