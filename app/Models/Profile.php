@@ -22,6 +22,8 @@ class Profile extends Model implements HasMedia
         'videos_count',
         'likes_count',
         'action_label',
+        'rencontre_primary_label',
+        'rencontre_secondary_label',
         'online_from',
         'online_to',
         'script_url',

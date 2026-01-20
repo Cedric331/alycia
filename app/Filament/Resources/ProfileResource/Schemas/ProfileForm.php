@@ -39,6 +39,16 @@ class ProfileForm
                             ->placeholder("S'abonner au VIP d'alycia")
                             ->columnSpanFull()
                             ->maxLength(255),
+                        Forms\Components\TextInput::make('rencontre_primary_label')
+                            ->label('Label bouton rencontre (principal)')
+                            ->placeholder("Accepter l'invitation")
+                            ->columnSpanFull()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('rencontre_secondary_label')
+                            ->label('Label bouton rencontre (secondaire)')
+                            ->placeholder('Découvrir le profil')
+                            ->columnSpanFull()
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('script_url')
                             ->label('URL du script')
                             ->placeholder('https://c.op4pro.com/8/js/script.js')

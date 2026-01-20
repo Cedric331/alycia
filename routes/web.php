@@ -72,6 +72,8 @@ Route::get('/', function () {
             'videos_count' => $profile->videos_count,
             'likes_count' => $profile->likes_count,
             'action_label' => $profile->action_label,
+            'rencontre_primary_label' => $profile->rencontre_primary_label,
+            'rencontre_secondary_label' => $profile->rencontre_secondary_label,
             'banner_url' => $bannerUrl,
             'avatar_url' => $avatarUrl,
             'logo_url' => $logoUrl,

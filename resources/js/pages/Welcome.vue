@@ -13,6 +13,8 @@ interface Profile {
     videos_count: number;
     likes_count: number;
     action_label: string;
+    rencontre_primary_label: string | null;
+    rencontre_secondary_label: string | null;
     script_url: string | null;
     banner_url: string | null;
     avatar_url: string | null;
@@ -23,7 +25,7 @@ interface Profile {
 interface Post {
     id: number;
     content: string | null;
-    type: 'tout' | 'live' | 'rencontre';
+    type: 'photo' | 'video' | 'live' | 'rencontre';
     duration?: string | null;
     likes_count: number;
     is_visible: boolean;
@@ -212,11 +214,11 @@ onUnmounted(() => {
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/60"></div>
 
                 <!-- Name en haut à gauche -->
-                <div class="absolute top-1 left-3 sm:top-2 sm:left-4 z-10">
+                <!-- <div class="absolute top-1 left-3 sm:top-2 sm:left-4 z-10">
                     <div class="flex items-center gap-2 mb-1 sm:mb-2">
                         <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white">{{ profile.name }}</h2>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- en haut au centre : logo -->
                 <div class="absolute top-1 left-1/2 z-10 -translate-x-1/2 sm:top-2">
@@ -434,7 +436,7 @@ onUnmounted(() => {
                         </button>
                             
                         <button
-                            @click="triggerConclusionCta"
+                            @click="activeTab = 'rencontre'"
                             :class="[
                                 'px-3 py-2 rounded font-medium transition-colors text-sm sm:text-base',
                                 activeTab === 'rencontre'
@@ -480,8 +482,103 @@ onUnmounted(() => {
                     </div>
                 </div>
 
+                <div v-if="activeTab === 'rencontre'" class="flex justify-center m-12">
+                    <div class="w-full max-w-xl bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-2xl p-6 sm:p-8 text-center shadow-xl relative">
+
+
+                        <div class="flex flex-col items-center">
+                            <div class="relative">
+
+                                    <span
+                                    v-if="isLive() || isOnline()"
+                                    class="absolute -inset-[4px] rounded-full
+                                            bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
+                                            live-pulse pointer-events-none z-0"
+                                    aria-hidden="true"
+                                    />
+
+                                    <!-- Avatar -->
+                                    <div class="relative z-10 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
+                                            rounded-full border-4 border-black bg-gray-800 overflow-hidden">
+                                            <img
+                                            v-if="profile.avatar_url"
+                                            :src="profile.avatar_url"
+                                            :alt="profile.name"
+                                            class="w-full h-full object-cover"
+                                            />
+                                        <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                                            <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- ✅ Online dot -->
+                                    <span
+                                        v-if="isOnline()"
+                                        class="absolute bottom-1 right-2 sm:bottom-1.5 sm:right-
+                                            w-2.5 h-2.5 sm:w-3.5 sm:h-3.5
+                                            rounded-full bg-green-500
+                                            ring-4 ring-black z-30"
+                                        title="En ligne"
+                                    />
+
+                                    <!-- Live badge: sur le wrapper (donc visible) -->
+                                    <span
+                                        v-if="isLive()"
+                                        class="absolute -bottom-4 left-1/2 -translate-x-1/2
+                                            bg-red-500 text-white
+                                            px-2 py-0.5
+                                            rounded-full
+                                            text-xs sm:text-sm font-bold
+                                            border border-red-300/60
+                                            shadow-sm
+                                            live-pulse z-20"
+                                    >
+                                        LIVE
+                                    </span>
+                            </div>
+
+                            <p class="mt-6 text-lg sm:text-xl font-semibold text-gray-900">
+                                {{ profile.name }} t'a envoyé une invitation !
+                            </p>
+
+                            <div class="mt-6 w-full flex flex-col gap-3">
+                                <button
+                                    type="button"
+                                    @click="triggerConclusionCta"
+                                    class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 cursor-pointer
+                                        hover:from-pink-600 hover:via-rose-600 hover:to-orange-500
+                                        text-white font-semibold py-3 px-6 rounded-full
+                                        transition-all duration-200 shadow-md"
+                                >
+
+                                <!-- icon coeur -->
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                </svg>
+                                    {{ profile.rencontre_primary_label || "Accepter l'invitation" }}
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="triggerConclusionCta"
+                                    class="w-full flex items-center justify-center gap-2 bg-gray-900/95 hover:bg-gray-900/80 text-white font-semibold py-3 px-6 rounded-full cursor-pointer
+                                        border border-gray-800 hover:border-gray-700
+                                        transition-all duration-200 shadow-sm"
+                                    >
+                                    <!-- icon message -->
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21.0039 12C21.0039 16.9706 16.9745 21 12.0039 21C9.9675 21 3.00463 21 3.00463 21C3.00463 21 4.56382 17.2561 3.93982 16.0008C3.34076 14.7956 3.00391 13.4372 3.00391 12C3.00391 7.02944 7.03334 3 12.0039 3C16.9745 3 21.0039 7.02944 21.0039 12Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    {{ profile.rencontre_secondary_label || "Découvrir le profil" }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Posts Feed - List View -->
-                <div v-if="displayMode === 'list'" class="space-y-4 sm:space-y-6">
+                <div v-else-if="displayMode === 'list'" class="space-y-4 sm:space-y-6">
                     <div 
                         v-for="post in filteredPosts" 
                         :key="post.id"
@@ -695,6 +792,7 @@ onUnmounted(() => {
                     </div>
                 </div>
 
+
                 <!-- Posts Feed - Grid View -->
                 <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                     <div 
@@ -812,7 +910,7 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Empty State -->
-                <div v-if="filteredPosts.length === 0" class="text-center py-12">
+                <div v-if="activeTab !== 'rencontre' && filteredPosts.length === 0" class="text-center py-12">
                     <p class="text-gray-400">
                         Aucune publication pour le moment.
                     </p>
