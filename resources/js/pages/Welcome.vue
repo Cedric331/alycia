@@ -237,7 +237,7 @@ onUnmounted(() => {
             <!-- Profile Content -->
             <div class="bg-black border-x border-b border-gray-800 rounded-b-lg p-4 sm:p-6 lg:p-8 pb-24 sm:pb-28">
                 <!-- Profile Header + Biography with avatar inside the card -->
-                <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:p-6">
+                <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:px-2">
                     <!-- Avatar -->
                     <div class="absolute -top-10 sm:-top-12 left-0 sm:left-0">
                         
@@ -246,7 +246,7 @@ onUnmounted(() => {
                         v-if="isLive() || isOnline()"
                         class="absolute -inset-[4px] rounded-full
                                 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
-                                live-pulse pointer-events-none z-0"
+                                pointer-events-none z-0"
                         aria-hidden="true"
                         />
 
@@ -482,8 +482,8 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <div v-if="activeTab === 'rencontre'" class="flex justify-center m-12">
-                    <div class="w-full max-w-xl bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-2xl p-6 sm:p-8 text-center shadow-xl relative">
+                <div v-if="activeTab === 'rencontre'" class="flex justify-center">
+                    <div class="w-full max-w-xl bg-transparent p-6 sm:p-8 text-center shadow-xl relative">
 
 
                         <div class="flex flex-col items-center">
@@ -493,7 +493,7 @@ onUnmounted(() => {
                                     v-if="isLive() || isOnline()"
                                     class="absolute -inset-[4px] rounded-full
                                             bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400
-                                            live-pulse pointer-events-none z-0"
+                                            pointer-events-none z-0"
                                     aria-hidden="true"
                                     />
 
@@ -539,7 +539,7 @@ onUnmounted(() => {
                                     </span>
                             </div>
 
-                            <p class="mt-6 text-lg sm:text-xl font-semibold text-gray-900">
+                            <p class="mt-6 text-lg sm:text-xl font-semibold text-white">
                                 {{ profile.name }} t'a envoyé une invitation !
                             </p>
 
@@ -562,13 +562,13 @@ onUnmounted(() => {
                                 <button
                                     type="button"
                                     @click="triggerConclusionCta"
-                                    class="w-full flex items-center justify-center gap-2 bg-gray-900/95 hover:bg-gray-900/80 text-white font-semibold py-3 px-6 rounded-full cursor-pointer
+                                    class="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-200 text-black font-semibold py-3 px-6 rounded-full cursor-pointer
                                         border border-gray-800 hover:border-gray-700
                                         transition-all duration-200 shadow-sm"
                                     >
                                     <!-- icon message -->
                                     <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M21.0039 12C21.0039 16.9706 16.9745 21 12.0039 21C9.9675 21 3.00463 21 3.00463 21C3.00463 21 4.56382 17.2561 3.93982 16.0008C3.34076 14.7956 3.00391 13.4372 3.00391 12C3.00391 7.02944 7.03334 3 12.0039 3C16.9745 3 21.0039 7.02944 21.0039 12Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M21.0039 12C21.0039 16.9706 16.9745 21 12.0039 21C9.9675 21 3.00463 21 3.00463 21C3.00463 21 4.56382 17.2561 3.93982 16.0008C3.34076 14.7956 3.00391 13.4372 3.00391 12C3.00391 7.02944 7.03334 3 12.0039 3C16.9745 3 21.0039 7.02944 21.0039 12Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
                                     {{ profile.rencontre_secondary_label || "Découvrir le profil" }}
                                 </button>
