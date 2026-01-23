@@ -227,7 +227,7 @@ onUnmounted(() => {
                             v-if="profile.logo_url"
                             :src="profile.logo_url"
                             alt="Logo"
-                            class="h-8 w-auto object-contain sm:h-10"
+                            class="h-10 w-auto object-contain sm:h-12"
                             loading="lazy"
                         />
                     </div>
@@ -235,7 +235,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Profile Content -->
-            <div class="bg-black border-x border-b border-gray-800 rounded-b-lg p-4 sm:p-6 lg:p-8 pb-24 sm:pb-28">
+            <div class="bg-black rounded-b-lg p-4 sm:p-6 lg:p-8" :class="{ 'pb-24 sm:pb-28': activeTab !== 'rencontre' }">
                 <!-- Profile Header + Biography with avatar inside the card -->
                 <div class="mb-6 relative bg-gray-900/40 rounded-lg p-4 sm:p-5 lg:px-2">
                     <!-- Avatar -->
