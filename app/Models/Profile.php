@@ -87,5 +87,14 @@ class Profile extends Model implements HasMedia
 
         return $current >= $start || $current <= $end;
     }
+
+    public static function getDefault(): self
+    {
+        return self::firstOrCreate([
+            'name' => 'Alycia',
+        ]);
+        
+        return $profile;
+    }
 }
 
