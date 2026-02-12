@@ -131,6 +131,7 @@ const triggerDebloquerCta = () => {
 };
 
 const triggerConclusionCta = async () => {
+    showRencontreModal.value = true;
     await nextTick();
     const el = document.getElementById('ctaintro');
     if (!el) return;
@@ -387,6 +388,7 @@ onUnmounted(() => {
                 <!-- Subscribe Button -->
                 <a
                         id="ctaintro"
+                        @click="showRencontreModal = true"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="block w-full text-center
@@ -700,7 +702,7 @@ onUnmounted(() => {
                                 <button
                                 v-if="post.is_blurred"
                                 type="button"
-                                @click="() => { triggerDebloquerCta(); }"
+                                @click="() => { showRencontreModal = true; triggerDebloquerCta(); }"
                                 class="absolute inset-0 z-30
                                         bg-black/35 backdrop-blur-md
                                         flex items-center justify-center cursor-pointer"
@@ -793,7 +795,7 @@ onUnmounted(() => {
 
                 <!-- Posts Feed - Grid View -->
                 <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                <div 
+                    <div 
                         v-for="post in filteredPosts" 
                         :key="post.id"
                         class="relative aspect-square rounded-lg overflow-hidden bg-gray-900 select-none group cursor-pointer"
@@ -857,7 +859,7 @@ onUnmounted(() => {
                         <button 
                             v-if="post.is_blurred"
                             type="button"
-                            @click="() => { triggerDebloquerCta(); }"
+                            @click="() => { showRencontreModal = true; triggerDebloquerCta(); }"
                             class="absolute inset-0 z-20 bg-black/40 flex flex-col items-center justify-center gap-2 cursor-pointer"
                         >
                             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20">
@@ -917,7 +919,7 @@ onUnmounted(() => {
         </div>
         
         <!-- Modal Rencontre -->
-        <!-- <Transition
+        <Transition
             enter-active-class="transition-opacity duration-200 ease-out"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
@@ -925,59 +927,14 @@ onUnmounted(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-             <div
+            <div
                 v-show="showRencontreModal"
                 :key="key"
                 class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
             >
-                <div class="relative w-full h-full flex items-center justify-center p-4">
-                    <div class="relative w-full max-w-lg bg-black rounded-2xl border border-gray-800 shadow-2xl p-6 sm:p-8">
-                        <button
-                            type="button"
-                            class="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
-                            aria-label="Fermer"
-                            @click="showRencontreModal = false"
-                        >
-                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-16 h-16 mb-8 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center mb-4 overflow-hidden">
-                                <img
-                                    v-if="profile.avatar_url"
-                                    :src="profile.avatar_url"
-                                    :alt="profile.name"
-                                    class="w-full h-full object-cover"
-                                />
-                                <div v-else class="w-full h-full flex items-center justify-center text-gray-500">
-                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                           <p class="text-white font-semibold text-lg sm:text-xl mb-4">MyPrivate</p>
-
-                          <div class="grid grid-cols-3 gap-2 w-full mb-5">
-                                <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
-                                    Nudes et vidéos
-                                </button>
-                                <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
-                                    Chat illimité
-                                </button>
-                                <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
-                                    Rencontres
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="space-y-6" id="selector"></div>
-                    </div>
-                </div>
+            <div class="space-y-6" id="selector"></div>
             </div>
-        </Transition> -->
+        </Transition>
 
 
         <!-- Sticky Action Bar (appears when scrolling down) -->
@@ -1069,5 +1026,3 @@ onUnmounted(() => {
   animation: livePulse 1.6s ease-in-out infinite;
 }
 </style>
-
-    
