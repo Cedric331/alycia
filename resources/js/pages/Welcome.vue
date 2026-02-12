@@ -131,7 +131,6 @@ const triggerDebloquerCta = () => {
 };
 
 const triggerConclusionCta = async () => {
-    showRencontreModal.value = true;
     await nextTick();
     const el = document.getElementById('ctaintro');
     if (!el) return;
@@ -388,7 +387,6 @@ onUnmounted(() => {
                 <!-- Subscribe Button -->
                 <a
                         id="ctaintro"
-                        @click="showRencontreModal = true"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="block w-full text-center
@@ -702,7 +700,7 @@ onUnmounted(() => {
                                 <button
                                 v-if="post.is_blurred"
                                 type="button"
-                                @click="() => { showRencontreModal = true; triggerDebloquerCta(); }"
+                                @click="() => { triggerDebloquerCta(); }"
                                 class="absolute inset-0 z-30
                                         bg-black/35 backdrop-blur-md
                                         flex items-center justify-center cursor-pointer"
@@ -795,7 +793,7 @@ onUnmounted(() => {
 
                 <!-- Posts Feed - Grid View -->
                 <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                    <div 
+                <div 
                         v-for="post in filteredPosts" 
                         :key="post.id"
                         class="relative aspect-square rounded-lg overflow-hidden bg-gray-900 select-none group cursor-pointer"
@@ -859,7 +857,7 @@ onUnmounted(() => {
                         <button 
                             v-if="post.is_blurred"
                             type="button"
-                            @click="() => { showRencontreModal = true; triggerDebloquerCta(); }"
+                            @click="() => { triggerDebloquerCta(); }"
                             class="absolute inset-0 z-20 bg-black/40 flex flex-col items-center justify-center gap-2 cursor-pointer"
                         >
                             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 flex items-center justify-center border border-white/20">
@@ -919,7 +917,7 @@ onUnmounted(() => {
         </div>
         
         <!-- Modal Rencontre -->
-        <Transition
+        <!-- <Transition
             enter-active-class="transition-opacity duration-200 ease-out"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
@@ -927,7 +925,7 @@ onUnmounted(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div
+             <div
                 v-show="showRencontreModal"
                 :key="key"
                 class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
@@ -960,9 +958,9 @@ onUnmounted(() => {
                                 </div>
                             </div>
 
-                            <!-- <p class="text-white font-semibold text-lg sm:text-xl mb-4">MyPrivate</p> -->
+                           <p class="text-white font-semibold text-lg sm:text-xl mb-4">MyPrivate</p>
 
-                            <div class="grid grid-cols-3 gap-2 w-full mb-5">
+                          <div class="grid grid-cols-3 gap-2 w-full mb-5">
                                 <button class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 text-white rounded-lg py-2 text-xs sm:text-sm font-semibold">
                                     Nudes et vidéos
                                 </button>
@@ -979,7 +977,7 @@ onUnmounted(() => {
                     </div>
                 </div>
             </div>
-        </Transition>
+        </Transition> -->
 
 
         <!-- Sticky Action Bar (appears when scrolling down) -->
